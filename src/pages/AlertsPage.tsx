@@ -32,6 +32,7 @@ export default function AlertsPage() {
   const { data: alerts = [], isLoading } = useAlerts({
     ticker: searchTicker || undefined,
     limit: 100,
+    date_from: dateRange || undefined,
   })
 
   const filtered = useMemo(() => {

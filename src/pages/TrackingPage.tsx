@@ -65,7 +65,7 @@ function TradeCard({ trade }: { trade: TrackedTrade }) {
   )
 }
 
-function SettledTradesTable({ trades }: { trades: TrackedTrade[] }) {
+function SettledTradesTable({ trades, onViewAll }: { trades: TrackedTrade[]; onViewAll: () => void }) {
   const settled = trades.filter(t => t.status === 'success' || t.status === 'failed' || t.status === 'expired')
   if (settled.length === 0) return null
 
@@ -112,7 +112,7 @@ function SettledTradesTable({ trades }: { trades: TrackedTrade[] }) {
           </tbody>
         </table>
         <div className="px-4 py-3 border-t border-border flex justify-end">
-          <button className="text-[13px] text-info hover:underline font-medium">
+          <button onClick={onViewAll} className="text-[13px] text-info hover:underline font-medium">
             View full history
           </button>
         </div>
@@ -192,7 +192,7 @@ export default function TrackingPage() {
 
           {/* Settled trades table — only show when "All" or settled filter */}
           {(activeTab === '' || ['success', 'failed', 'expired'].includes(activeTab)) && (
-            <SettledTradesTable trades={trades} />
+            <SettledTradesTable trades={trades} onViewAll={() => setActiveTab('')} />
           )}
         </>
       )}

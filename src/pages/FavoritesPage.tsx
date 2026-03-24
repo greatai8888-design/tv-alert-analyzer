@@ -2,11 +2,20 @@ import { useState } from 'react'
 import { Link } from 'react-router-dom'
 import { useFavorites, useRemoveFavorite } from '../hooks/useFavorites'
 import { recommendationBgColor } from '../lib/utils'
+import { supabase } from '../lib/supabase'
 import type { Favorite } from '../types'
 
 function FavoriteCard({ fav, onRemove }: { fav: Favorite; onRemove: (alertId: string) => void }) {
   const [note, setNote] = useState(fav.note ?? '')
+  const [savedIndicator, setSavedIndicator] = useState(false)
   const alert = fav.alert
+
+  const handleNoteBlur = async () => {
+    if (note === (fav.note ?? '')) return
+    await supabase.from('favorites').update({ note }).eq('alert_id', fav.alert_id)
+    setSavedIndicator(true)
+    setTimeout(() => setSavedIndicator(false), 2000)
+  }
   const analysis = alert?.analyses?.[0]
 
   const confidence = analysis?.confidence ?? null
@@ -47,10 +56,16 @@ function FavoriteCard({ fav, onRemove }: { fav: Favorite; onRemove: (alertId: st
 
       {/* Middle column */}
       <div className="flex-grow flex flex-col gap-2">
-        <span className="text-[12px] text-on-surface-variant">收藏於 {favoriteDate}</span>
+        <div className="flex items-center gap-2">
+          <span className="text-[12px] text-on-surface-variant">收藏於 {favoriteDate}</span>
+          {savedIndicator && (
+            <span className="text-[11px] text-primary font-medium">已儲存</span>
+          )}
+        </div>
         <textarea
           value={note}
           onChange={e => setNote(e.target.value)}
+          onBlur={handleNoteBlur}
           rows={3}
           placeholder="新增備註..."
           className="w-full bg-surface border border-border rounded-lg px-3 py-2 text-[13px] text-on-surface resize-none outline-none focus:border-primary transition-colors placeholder:text-on-surface-variant/50"

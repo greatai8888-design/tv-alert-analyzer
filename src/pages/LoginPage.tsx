@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useAuth } from '../contexts/AuthContext'
+import { supabase } from '../lib/supabase'
 
 export default function LoginPage() {
   const [isSignUp, setIsSignUp] = useState(false)
@@ -33,6 +34,18 @@ export default function LoginPage() {
   const switchMode = () => {
     setIsSignUp(v => !v)
     setError('')
+  }
+
+  const handleForgotPassword = async () => {
+    if (!email) { setError('請先輸入電子郵件'); return }
+    try {
+      const { error } = await supabase.auth.resetPasswordForEmail(email)
+      if (error) throw error
+      setError('')
+      alert('密碼重設連結已寄出，請查看信箱')
+    } catch (err: unknown) {
+      setError(err instanceof Error ? err.message : 'An error occurred')
+    }
   }
 
   return (
@@ -152,7 +165,7 @@ export default function LoginPage() {
                 密碼
               </label>
               {!isSignUp && (
-                <button type="button" className="text-[12px] text-secondary-dark hover:underline py-2 px-1">
+                <button type="button" onClick={handleForgotPassword} className="text-[12px] text-secondary-dark hover:underline py-2 px-1">
                   忘記密碼？
                 </button>
               )}

@@ -10,12 +10,20 @@ const navItems = [
   { label: 'Settings', icon: 'settings', path: '/settings' },
 ]
 
-export default function Sidebar() {
+interface SidebarProps {
+  mobile?: boolean
+  onClose?: () => void
+}
+
+export default function Sidebar({ mobile, onClose }: SidebarProps) {
   const { signOut } = useAuth()
 
   return (
     <aside
-      className="hidden lg:flex flex-col h-screen w-64 shrink-0 fixed left-0 top-0 z-20"
+      className={[
+        'flex flex-col h-screen w-64 shrink-0',
+        mobile ? 'relative' : 'hidden lg:flex fixed left-0 top-0 z-20',
+      ].join(' ')}
       style={{
         backgroundColor: '#F2EDE4',
         borderRight: '1px solid #D9D2C7',
@@ -32,6 +40,16 @@ export default function Sidebar() {
         >
           Stitch
         </span>
+        {mobile && onClose && (
+          <button
+            onClick={onClose}
+            className="ml-auto flex items-center justify-center w-8 h-8 rounded-lg hover:bg-[#D9D2C7]/40 transition-colors"
+            style={{ color: '#4A4E52' }}
+            aria-label="Close menu"
+          >
+            <span className="material-symbols-outlined text-[20px] leading-none">close</span>
+          </button>
+        )}
       </div>
 
       {/* Nav links */}
@@ -41,6 +59,7 @@ export default function Sidebar() {
             key={path}
             to={path}
             end={path === '/'}
+            onClick={onClose}
             className={({ isActive }) =>
               [
                 'flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm transition-colors',

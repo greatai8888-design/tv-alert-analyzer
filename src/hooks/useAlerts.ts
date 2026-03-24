@@ -7,6 +7,7 @@ export function useAlerts(filters?: {
   recommendation?: string
   limit?: number
   offset?: number
+  date_from?: string
 }) {
   return useQuery({
     queryKey: ['alerts', filters],
@@ -19,6 +20,7 @@ export function useAlerts(filters?: {
 
       if (filters?.offset) query = query.range(filters.offset, filters.offset + (filters.limit ?? 20) - 1)
       if (filters?.ticker) query = query.ilike('ticker', `%${filters.ticker}%`)
+      if (filters?.date_from) query = query.gte('created_at', filters.date_from)
 
       const { data, error } = await query
       if (error) throw error

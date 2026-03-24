@@ -253,9 +253,6 @@ export default function DashboardPage() {
       <section>
         <div className="flex items-center justify-between mb-4">
           <h2 className="serif-heading text-xl text-on-surface">Active Trades</h2>
-          <button className="text-on-surface-variant hover:text-on-surface transition-colors" aria-label="Filter trades">
-            <span className="material-symbols-outlined" style={{ fontSize: 20 }}>filter_list</span>
-          </button>
         </div>
 
         {activeTrades.length === 0 ? (

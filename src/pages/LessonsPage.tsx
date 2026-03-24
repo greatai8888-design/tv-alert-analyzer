@@ -16,8 +16,6 @@ function lessonStatusBadge(lessonType: string) {
 }
 
 function LessonCard({ lesson }: { lesson: Lesson }) {
-  const [bookmarked, setBookmarked] = useState(false)
-
   return (
     <div className="bg-white rounded-[10px] border border-border shadow hover:border-secondary transition-colors p-4 flex flex-col gap-3">
       {/* Top row */}
@@ -77,19 +75,10 @@ function LessonCard({ lesson }: { lesson: Lesson }) {
       </div>
 
       {/* Footer */}
-      <div className="flex items-center justify-between pt-1 border-t border-border">
+      <div className="pt-1 border-t border-border">
         <span className="mono-data text-[11px] text-on-surface-variant">
           {new Date(lesson.created_at).toLocaleDateString('zh-TW')}
         </span>
-        <button
-          onClick={() => setBookmarked(v => !v)}
-          className={`transition-colors ${bookmarked ? 'text-secondary' : 'text-border hover:text-on-surface-variant'}`}
-          aria-label={bookmarked ? 'Remove bookmark' : 'Bookmark lesson'}
-        >
-          <span className="material-symbols-outlined" style={{ fontSize: 20, fontVariationSettings: bookmarked ? "'FILL' 1, 'wght' 400, 'GRAD' 0, 'opsz' 24" : undefined }}>
-            bookmark
-          </span>
-        </button>
       </div>
     </div>
   )

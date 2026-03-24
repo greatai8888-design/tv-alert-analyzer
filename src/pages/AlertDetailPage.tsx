@@ -3,6 +3,8 @@ import { useParams, Link } from 'react-router-dom'
 import { useAlert } from '../hooks/useAlerts'
 import { useAddFavorite } from '../hooks/useFavorites'
 import { formatPrice, formatDate, recommendationBgColor } from '../lib/utils'
+import { supabase } from '../lib/supabase'
+import { useAuth } from '../contexts/AuthContext'
 import type { Analysis } from '../types'
 
 type ChartTab = 'Daily' | 'Weekly' | 'Intraday'
@@ -43,10 +45,40 @@ export default function AlertDetailPage() {
   const { id } = useParams<{ id: string }>()
   const { data: alert, isLoading, error } = useAlert(id ?? '')
   const addFavorite = useAddFavorite()
+  const { user } = useAuth()
   const [activeTab, setActiveTab] = useState<ChartTab>('Daily')
   const [favorited, setFavorited] = useState(false)
+  const [tracking, setTracking] = useState(false)
+  const [tracked, setTracked] = useState(false)
 
   const analysis = getAnalysis(alert?.analyses)
+
+  async function handleStartTracking() {
+    if (!alert || !user || tracked || tracking) return
+    setTracking(true)
+    try {
+      const expiresAt = new Date()
+      expiresAt.setDate(expiresAt.getDate() + 7)
+      const { error: insertError } = await supabase.from('tracked_trades').insert({
+        user_id: user.id,
+        analysis_id: analysis?.id ?? null,
+        ticker: alert.ticker,
+        recommendation: analysis?.recommendation ?? alert.action ?? 'HOLD',
+        entry_price: analysis?.entry_price ?? alert.price,
+        stop_loss: analysis?.stop_loss ?? null,
+        take_profit: analysis?.take_profit ?? null,
+        confidence: analysis?.confidence ?? 0,
+        status: 'tracking',
+        expires_at: expiresAt.toISOString(),
+      })
+      if (insertError) throw insertError
+      setTracked(true)
+    } catch (err: unknown) {
+      window.alert('追蹤失敗: ' + (err instanceof Error ? err.message : String(err)))
+    } finally {
+      setTracking(false)
+    }
+  }
 
   async function handleFavorite() {
     if (!alert || favorited) return
@@ -130,11 +162,13 @@ export default function AlertDetailPage() {
               </span>
             </button>
             <button
-              className="flex items-center gap-1 px-3 py-1.5 rounded-lg text-sm font-medium border transition-colors hover:bg-info-light"
+              onClick={handleStartTracking}
+              disabled={tracked || tracking}
+              className="flex items-center gap-1 px-3 py-1.5 rounded-lg text-sm font-medium border transition-colors hover:bg-info-light disabled:opacity-60"
               style={{ borderColor: 'var(--color-info)', color: 'var(--color-info)' }}
             >
               <span className="material-symbols-outlined text-base">track_changes</span>
-              開始追蹤
+              {tracked ? '已追蹤' : tracking ? '處理中...' : '開始追蹤'}
             </button>
           </div>
         </div>
