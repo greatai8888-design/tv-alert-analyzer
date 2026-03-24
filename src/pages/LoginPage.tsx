@@ -152,7 +152,7 @@ export default function LoginPage() {
                 密碼
               </label>
               {!isSignUp && (
-                <button type="button" className="text-[12px] text-secondary hover:underline">
+                <button type="button" className="text-[12px] text-secondary-dark hover:underline py-2 px-1">
                   忘記密碼？
                 </button>
               )}
@@ -195,7 +195,7 @@ export default function LoginPage() {
           <button
             type="button"
             onClick={switchMode}
-            className="text-secondary font-medium hover:underline"
+            className="text-secondary-dark font-medium hover:underline py-2 px-1"
           >
             {isSignUp ? '立即登入' : '立即加入'}
           </button>
