@@ -36,7 +36,7 @@ export default function LoginPage() {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center relative overflow-hidden bg-background">
+    <main className="min-h-screen flex items-center justify-center relative overflow-hidden bg-background">
       {/* Decorative SVG watermark */}
       <div className="absolute inset-0 flex items-center justify-center pointer-events-none select-none" aria-hidden>
         <svg
@@ -102,7 +102,7 @@ export default function LoginPage() {
           <button
             type="button"
             onClick={() => { if (isSignUp) switchMode() }}
-            className={`flex-1 py-1.5 rounded-full text-sm font-medium transition-colors ${
+            className={`flex-1 min-h-[48px] py-1.5 rounded-full text-sm font-medium transition-colors ${
               !isSignUp
                 ? 'bg-white text-on-surface editorial-shadow'
                 : 'text-on-surface-variant hover:text-on-surface'
@@ -113,7 +113,7 @@ export default function LoginPage() {
           <button
             type="button"
             onClick={() => { if (!isSignUp) switchMode() }}
-            className={`flex-1 py-1.5 rounded-full text-sm font-medium transition-colors ${
+            className={`flex-1 min-h-[48px] py-1.5 rounded-full text-sm font-medium transition-colors ${
               isSignUp
                 ? 'bg-white text-on-surface editorial-shadow'
                 : 'text-on-surface-variant hover:text-on-surface'
@@ -201,6 +201,6 @@ export default function LoginPage() {
           </button>
         </p>
       </div>
-    </div>
+    </main>
   )
 }

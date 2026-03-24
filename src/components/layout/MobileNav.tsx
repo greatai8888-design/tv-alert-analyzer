@@ -22,7 +22,7 @@ export default function MobileNav() {
           key={path}
           to={path}
           end={path === '/'}
-          className="flex flex-col items-center justify-center flex-1 h-full gap-1"
+          className="flex flex-col items-center justify-center flex-1 h-full gap-1 min-h-[48px]"
         >
           {({ isActive }) => (
             <div
