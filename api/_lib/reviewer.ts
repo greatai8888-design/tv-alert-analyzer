@@ -117,12 +117,12 @@ export async function getRecentLessons(userId: string, ticker: string): Promise<
 
   // Increment times_used for retrieved lessons (fire-and-forget)
   for (const lesson of sorted) {
-    adminClient
-      .from('lessons')
-      .update({ times_used: (lesson.times_used || 0) + 1 })
-      .eq('id', lesson.id)
-      .then(() => {})
-      .catch((e: unknown) => console.error('Failed to increment times_used:', e))
+    Promise.resolve(
+      adminClient
+        .from('lessons')
+        .update({ times_used: (lesson.times_used || 0) + 1 })
+        .eq('id', lesson.id)
+    ).catch((e: unknown) => console.error('Failed to increment times_used:', e))
   }
 
   const lessonsText = sorted.map((l, i) => {
