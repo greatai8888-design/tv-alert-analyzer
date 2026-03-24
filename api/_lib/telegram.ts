@@ -1,5 +1,5 @@
-import { config } from './config'
-import type { AnalysisResult, TradingViewAlert } from './types'
+import { config } from './config.js'
+import type { AnalysisResult, TradingViewAlert } from './types.js'
 
 function getTelegramApi(): string {
   return `https://api.telegram.org/bot${config.TELEGRAM_BOT_TOKEN}`

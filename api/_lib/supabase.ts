@@ -1,7 +1,7 @@
 import { createClient } from '@supabase/supabase-js'
 import type { VercelRequest } from '@vercel/node'
-import { config } from './config'
-import { HttpError } from './errors'
+import { config } from './config.js'
+import { HttpError } from './errors.js'
 
 // Admin client for webhook/cron (bypasses RLS)
 export const adminClient = createClient(config.SUPABASE_URL, config.SUPABASE_SERVICE_ROLE_KEY)

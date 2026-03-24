@@ -1,7 +1,7 @@
 import Anthropic from '@anthropic-ai/sdk'
-import { config } from './config'
-import { adminClient } from './supabase'
-import type { TrackedTrade } from './tracker'
+import { config } from './config.js'
+import { adminClient } from './supabase.js'
+import type { TrackedTrade } from './tracker.js'
 
 const client = new Anthropic({ apiKey: config.ANTHROPIC_API_KEY })
 

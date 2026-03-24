@@ -1,6 +1,6 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node'
-import { withErrorHandler } from './_lib/errors'
-import { createUserClient } from './_lib/supabase'
+import { withErrorHandler } from './_lib/errors.js'
+import { createUserClient } from './_lib/supabase.js'
 
 export default withErrorHandler(async (req: VercelRequest, res: VercelResponse) => {
   const supabase = createUserClient(req)

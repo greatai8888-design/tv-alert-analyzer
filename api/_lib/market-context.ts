@@ -1,7 +1,7 @@
-import { withRetry } from './retry'
-import { cached } from './cache'
-import { config } from './config'
-import type { MarketContext } from './types'
+import { withRetry } from './retry.js'
+import { cached } from './cache.js'
+import { config } from './config.js'
+import type { MarketContext } from './types.js'
 
 export async function fetchMarketContext(): Promise<MarketContext | null> {
   return cached('market-context', config.CACHE_TTL_MARKET, async () => {

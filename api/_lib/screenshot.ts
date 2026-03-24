@@ -3,7 +3,7 @@
  * Uses Finviz (daily) + TradingView mini charts as fallback.
  */
 
-import type { ChartScreenshots } from './types'
+import type { ChartScreenshots } from './types.js'
 
 export async function captureChartScreenshot(ticker: string, exchange: string): Promise<string> {
   // Primary: Finviz daily chart with technical indicators

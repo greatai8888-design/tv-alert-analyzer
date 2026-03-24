@@ -3,8 +3,8 @@
  * Uses Google News RSS (no API key needed)
  */
 
-import { withRetry } from './retry'
-import type { NewsItem } from './types'
+import { withRetry } from './retry.js'
+import type { NewsItem } from './types.js'
 
 export async function fetchStockNews(ticker: string): Promise<NewsItem[]> {
   try {

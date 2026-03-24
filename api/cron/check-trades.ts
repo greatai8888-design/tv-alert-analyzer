@@ -1,9 +1,9 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node'
-import { withErrorHandler } from '../_lib/errors'
-import { config } from '../_lib/config'
-import { checkTrackedTrades } from '../_lib/tracker'
-import { reviewTrade } from '../_lib/reviewer'
-import { sendTradeResultToTelegram } from '../_lib/telegram'
+import { withErrorHandler } from '../_lib/errors.js'
+import { config } from '../_lib/config.js'
+import { checkTrackedTrades } from '../_lib/tracker.js'
+import { reviewTrade } from '../_lib/reviewer.js'
+import { sendTradeResultToTelegram } from '../_lib/telegram.js'
 
 export default withErrorHandler(async (req: VercelRequest, res: VercelResponse) => {
   // Validate cron secret

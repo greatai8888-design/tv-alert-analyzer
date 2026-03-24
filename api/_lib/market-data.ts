@@ -3,10 +3,10 @@
  * using Yahoo Finance API (no API key needed)
  */
 
-import { withRetry } from './retry'
-import { cached } from './cache'
-import { config } from './config'
-import type { StockFullData } from './types'
+import { withRetry } from './retry.js'
+import { cached } from './cache.js'
+import { config } from './config.js'
+import type { StockFullData } from './types.js'
 
 export async function fetchStockData(ticker: string): Promise<StockFullData | null> {
   return cached(`market-${ticker}`, config.CACHE_TTL_MARKET, async () => {

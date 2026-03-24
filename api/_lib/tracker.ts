@@ -1,7 +1,7 @@
-import { config } from './config'
-import { adminClient } from './supabase'
-import { fetchStockData } from './market-data'
-import type { AnalysisResult } from './types'
+import { config } from './config.js'
+import { adminClient } from './supabase.js'
+import { fetchStockData } from './market-data.js'
+import type { AnalysisResult } from './types.js'
 
 export interface TrackedTrade {
   id: string

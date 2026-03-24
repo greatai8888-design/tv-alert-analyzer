@@ -1,7 +1,7 @@
 import Anthropic from '@anthropic-ai/sdk'
-import { config } from './config'
-import { withRetry } from './retry'
-import type { AnalysisResult, StockFullData, NewsItem, MarketContext } from './types'
+import { config } from './config.js'
+import { withRetry } from './retry.js'
+import type { AnalysisResult, StockFullData, NewsItem, MarketContext } from './types.js'
 
 export const PROMPT_VERSION = 'v2.0'
 
