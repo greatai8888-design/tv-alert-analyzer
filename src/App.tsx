@@ -5,6 +5,9 @@ import LoginPage from './pages/LoginPage'
 import DashboardPage from './pages/DashboardPage'
 import AlertsPage from './pages/AlertsPage'
 import AlertDetailPage from './pages/AlertDetailPage'
+import TrackingPage from './pages/TrackingPage'
+import FavoritesPage from './pages/FavoritesPage'
+import LessonsPage from './pages/LessonsPage'
 import AppShell from './components/layout/AppShell'
 
 const queryClient = new QueryClient()
@@ -52,9 +55,9 @@ function AppRoutes() {
         <Route path="/" element={<DashboardPage />} />
         <Route path="/alerts" element={<AlertsPage />} />
         <Route path="/alerts/:id" element={<AlertDetailPage />} />
-        <Route path="/tracking" element={<div className="text-white">Tracking (coming soon)</div>} />
-        <Route path="/favorites" element={<div className="text-white">Favorites (coming soon)</div>} />
-        <Route path="/lessons" element={<div className="text-white">Lessons (coming soon)</div>} />
+        <Route path="/tracking" element={<TrackingPage />} />
+        <Route path="/favorites" element={<FavoritesPage />} />
+        <Route path="/lessons" element={<LessonsPage />} />
         <Route path="/settings" element={<div className="text-white">Settings (coming soon)</div>} />
       </Route>
 
