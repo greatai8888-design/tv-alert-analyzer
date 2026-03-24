@@ -1,23 +1,13 @@
 import { NavLink } from 'react-router-dom'
-import {
-  LayoutDashboard,
-  Bell,
-  TrendingUp,
-  Star,
-  BookOpen,
-  Settings,
-  LogOut,
-  Tv,
-} from 'lucide-react'
 import { useAuth } from '../../contexts/AuthContext'
 
 const navItems = [
-  { label: 'Dashboard', icon: LayoutDashboard, path: '/' },
-  { label: 'Alerts', icon: Bell, path: '/alerts' },
-  { label: 'Tracking', icon: TrendingUp, path: '/tracking' },
-  { label: 'Favorites', icon: Star, path: '/favorites' },
-  { label: 'Lessons', icon: BookOpen, path: '/lessons' },
-  { label: 'Settings', icon: Settings, path: '/settings' },
+  { label: 'Dashboard', icon: 'insights', path: '/' },
+  { label: 'Alerts', icon: 'notifications', path: '/alerts' },
+  { label: 'Tracking', icon: 'monitoring', path: '/tracking' },
+  { label: 'Favorites', icon: 'star', path: '/favorites' },
+  { label: 'Lessons', icon: 'auto_stories', path: '/lessons' },
+  { label: 'Settings', icon: 'settings', path: '/settings' },
 ]
 
 export default function Sidebar() {
@@ -25,55 +15,54 @@ export default function Sidebar() {
 
   return (
     <aside
-      className="hidden md:flex flex-col h-screen w-60 shrink-0 fixed left-0 top-0 z-20"
+      className="hidden lg:flex flex-col h-screen w-64 shrink-0 fixed left-0 top-0 z-20"
       style={{
-        backgroundColor: 'var(--color-bg-secondary)',
-        borderRight: '1px solid var(--color-border)',
+        backgroundColor: '#F2EDE4',
+        borderRight: '1px solid #D9D2C7',
       }}
     >
       {/* Logo */}
       <div
-        className="flex items-center gap-3 px-5 py-5"
-        style={{ borderBottom: '1px solid var(--color-border)' }}
+        className="flex items-center gap-3 px-5 py-4"
+        style={{ borderBottom: '1px solid #D9D2C7' }}
       >
-        <div
-          className="flex items-center justify-center w-8 h-8 rounded-lg"
-          style={{ backgroundColor: '#3b82f6' }}
-        >
-          <Tv size={16} color="#fff" />
-        </div>
         <span
-          className="font-semibold text-sm leading-tight"
-          style={{ color: 'var(--color-text-primary)' }}
+          className="serif-heading italic text-xl"
+          style={{ color: '#6B7A2E' }}
         >
-          TV Alert Analyzer
+          Stitch
         </span>
       </div>
 
       {/* Nav links */}
       <nav className="flex-1 overflow-y-auto py-4 px-3 space-y-1">
-        {navItems.map(({ label, icon: Icon, path }) => (
+        {navItems.map(({ label, icon, path }) => (
           <NavLink
             key={path}
             to={path}
             end={path === '/'}
             className={({ isActive }) =>
               [
-                'flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors',
+                'flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm transition-colors',
                 isActive
-                  ? 'border-l-2 pl-[10px]'
-                  : 'border-l-2 border-transparent pl-[10px]',
+                  ? 'border-l-2 pl-[10px] font-bold'
+                  : 'border-l-2 border-transparent pl-[10px] font-medium hover:bg-[#D9D2C7]/30',
               ].join(' ')
             }
             style={({ isActive }) => ({
-              color: isActive ? 'var(--color-text-primary)' : 'var(--color-text-secondary)',
-              backgroundColor: isActive ? 'rgba(59,130,246,0.1)' : 'transparent',
-              borderLeftColor: isActive ? '#3b82f6' : 'transparent',
+              color: isActive ? '#6B7A2E' : '#4A4E52',
+              backgroundColor: isActive ? 'rgba(255,255,255,0.5)' : undefined,
+              borderLeftColor: isActive ? '#6B7A2E' : 'transparent',
             })}
           >
             {({ isActive }) => (
               <>
-                <Icon size={18} color={isActive ? '#3b82f6' : 'var(--color-text-secondary)'} />
+                <span
+                  className="material-symbols-outlined text-[18px] leading-none"
+                  style={{ color: isActive ? '#6B7A2E' : '#4A4E52' }}
+                >
+                  {icon}
+                </span>
                 {label}
               </>
             )}
@@ -82,13 +71,18 @@ export default function Sidebar() {
       </nav>
 
       {/* Sign out */}
-      <div className="px-3 pb-5" style={{ borderTop: '1px solid var(--color-border)', paddingTop: '16px' }}>
+      <div
+        className="px-3 pb-5 pt-4"
+        style={{ borderTop: '1px solid #D9D2C7' }}
+      >
         <button
           onClick={() => signOut()}
-          className="flex items-center gap-3 w-full px-3 py-2.5 rounded-lg text-sm font-medium transition-colors hover:bg-white/5"
-          style={{ color: 'var(--color-text-secondary)' }}
+          className="flex items-center gap-3 w-full px-3 py-2.5 rounded-lg text-sm font-medium transition-colors hover:bg-[#D9D2C7]/30"
+          style={{ color: '#4A4E52' }}
         >
-          <LogOut size={18} />
+          <span className="material-symbols-outlined text-[18px] leading-none">
+            logout
+          </span>
           Sign Out
         </button>
       </div>

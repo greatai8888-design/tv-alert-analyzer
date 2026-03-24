@@ -1,41 +1,60 @@
-import { Bell, Search } from 'lucide-react'
-
 export default function TopNav() {
   return (
     <header
-      className="sticky top-0 z-10 flex items-center justify-between px-5 h-14 shrink-0"
+      className="sticky top-0 z-10 flex items-center justify-between px-5 h-14 shrink-0 backdrop-blur-md"
       style={{
-        backgroundColor: 'var(--color-bg-primary)',
-        borderBottom: '1px solid var(--color-border)',
+        backgroundColor: 'rgba(250, 247, 242, 0.9)',
+        borderBottom: '1px solid #D9D2C7',
       }}
     >
-      {/* Left: page title placeholder */}
-      <div />
-
-      {/* Right: search + bell */}
+      {/* Left: hamburger + logo */}
       <div className="flex items-center gap-3">
-        <div
-          className="flex items-center gap-2 rounded-lg px-3 py-1.5"
-          style={{
-            backgroundColor: 'var(--color-bg-card)',
-            border: '1px solid var(--color-border)',
-          }}
+        <button
+          className="flex items-center justify-center w-9 h-9 rounded-lg transition-colors hover:bg-[#D9D2C7]/40 lg:hidden"
+          style={{ color: '#4A4E52' }}
+          aria-label="Open menu"
         >
-          <Search size={15} color="var(--color-text-secondary)" />
-          <input
-            type="text"
-            placeholder="Search..."
-            className="bg-transparent text-sm outline-none w-40"
-            style={{ color: 'var(--color-text-primary)' }}
-          />
-        </div>
+          <span className="material-symbols-outlined text-[22px] leading-none">
+            menu
+          </span>
+        </button>
+        <span
+          className="serif-heading italic text-xl"
+          style={{ color: '#6B7A2E' }}
+        >
+          Stitch
+        </span>
+      </div>
+
+      {/* Right: search + notifications + avatar */}
+      <div className="flex items-center gap-2">
+        <button
+          className="flex items-center justify-center w-9 h-9 rounded-lg transition-colors hover:bg-[#D9D2C7]/40"
+          style={{ color: '#4A4E52' }}
+          aria-label="Search"
+        >
+          <span className="material-symbols-outlined text-[20px] leading-none">
+            search
+          </span>
+        </button>
 
         <button
-          className="relative flex items-center justify-center w-9 h-9 rounded-lg transition-colors hover:bg-white/5"
-          style={{ color: 'var(--color-text-secondary)' }}
+          className="relative flex items-center justify-center w-9 h-9 rounded-lg transition-colors hover:bg-[#D9D2C7]/40"
+          style={{ color: '#4A4E52' }}
+          aria-label="Notifications"
         >
-          <Bell size={18} />
+          <span className="material-symbols-outlined text-[20px] leading-none">
+            notifications
+          </span>
         </button>
+
+        {/* User avatar */}
+        <div
+          className="w-8 h-8 rounded-full flex items-center justify-center text-xs font-semibold ml-1"
+          style={{ backgroundColor: '#6B7A2E', color: '#FAF7F2' }}
+        >
+          U
+        </div>
       </div>
     </header>
   )

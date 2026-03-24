@@ -11,24 +11,22 @@ export default function AppShell({ children }: AppShellProps) {
   return (
     <div
       className="min-h-screen"
-      style={{ backgroundColor: 'var(--color-bg-primary)' }}
+      style={{ backgroundColor: '#FAF7F2' }}
     >
-      {/* Desktop sidebar — fixed, 240px wide */}
+      {/* Desktop sidebar — fixed, 256px wide, visible on lg+ */}
       <Sidebar />
 
-      {/* Main area shifted right on md+ to account for sidebar */}
-      <div className="md:ml-60 flex flex-col min-h-screen">
+      {/* Main area shifted right on lg+ to account for sidebar */}
+      <div className="lg:pl-64 flex flex-col min-h-screen">
         <TopNav />
 
         {/* Scrollable content */}
-        <main
-          className="flex-1 overflow-y-auto p-5 pb-20 md:pb-5"
-        >
+        <main className="flex-1 overflow-y-auto p-5 pb-20 lg:pb-5">
           {children}
         </main>
       </div>
 
-      {/* Mobile bottom tabs */}
+      {/* Mobile bottom tabs — hidden on lg+ */}
       <MobileNav />
     </div>
   )
