@@ -25,15 +25,17 @@ function timeAgo(dateStr: string): string {
 
 function alertLeftBorderColor(rec: string): string {
   switch (rec) {
-    case 'BUY': return 'border-l-primary'
-    case 'SELL': return 'border-l-tertiary'
-    default: return 'border-l-warning'
+    case 'BUY': return 'border-l-[#6B7A2E]'
+    case 'SELL': return 'border-l-[#A33220]'
+    case 'HOLD': return 'border-l-[#D4A843]'
+    default: return 'border-l-[#D4A843]'
   }
 }
 
 function getLatestRec(alert: Alert): string {
-  if (!alert.analyses || alert.analyses.length === 0) return alert.action ?? ''
-  return alert.analyses[alert.analyses.length - 1].recommendation
+  const recommendation = alert.analyses?.[0]?.recommendation
+  if (recommendation) return recommendation
+  return alert.action ?? 'HOLD'
 }
 
 function getLatestAnalysis(alert: Alert) {

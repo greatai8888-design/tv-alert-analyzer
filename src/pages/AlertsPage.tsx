@@ -1,12 +1,12 @@
 import { useState, useMemo } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useAlerts } from '../hooks/useAlerts'
-import { formatPrice, recommendationBgColor } from '../lib/utils'
+import { formatPrice } from '../lib/utils'
 import type { Alert } from '../types'
 
 type FilterType = 'ALL' | 'BUY' | 'SELL' | 'HOLD'
 type SortOrder = 'desc' | 'asc'
-type ViewMode = 'list' | 'grid'
+type ViewMode = 'grouped' | 'grid'
 
 function timeAgo(dateStr: string): string {
   const diff = Date.now() - new Date(dateStr).getTime()
@@ -25,7 +25,7 @@ export default function AlertsPage() {
   const [activeFilter, setActiveFilter] = useState<FilterType>('ALL')
   const [searchTicker, setSearchTicker] = useState('')
   const [sortOrder, setSortOrder] = useState<SortOrder>('desc')
-  const [viewMode, setViewMode] = useState<ViewMode>('list')
+  const [viewMode, setViewMode] = useState<ViewMode>('grouped')
   const [dateRange, setDateRange] = useState('')
   const navigate = useNavigate()
 
@@ -86,10 +86,19 @@ export default function AlertsPage() {
 
   function alertRowBorder(rec?: string) {
     switch (rec) {
-      case 'BUY': return 'border-l-4 border-l-primary'
-      case 'SELL': return 'border-l-4 border-l-tertiary'
-      case 'HOLD': return 'border-l-4 border-l-warning'
+      case 'BUY': return 'border-l-4 border-l-[#6B7A2E]'
+      case 'SELL': return 'border-l-4 border-l-[#A33220]'
+      case 'HOLD': return 'border-l-4 border-l-[#D4A843]'
       default: return 'border-l-4 border-l-border'
+    }
+  }
+
+  function alertBadgeSolid(rec?: string) {
+    switch (rec) {
+      case 'BUY': return 'bg-[#6B7A2E] text-white'
+      case 'SELL': return 'bg-[#A33220] text-white'
+      case 'HOLD': return 'bg-[#D4A843] text-[#2C2A24]'
+      default: return 'bg-surface text-on-surface-variant border border-border'
     }
   }
 
@@ -130,9 +139,9 @@ export default function AlertsPage() {
           {/* View toggle */}
           <div className="flex border border-border rounded-lg overflow-hidden">
             <button
-              className={`p-1.5 transition-colors ${viewMode === 'list' ? 'bg-surface text-on-surface' : 'text-on-surface-variant hover:bg-surface'}`}
-              onClick={() => setViewMode('list')}
-              title="列表視圖"
+              className={`p-1.5 transition-colors ${viewMode === 'grouped' ? 'bg-surface text-on-surface' : 'text-on-surface-variant hover:bg-surface'}`}
+              onClick={() => setViewMode('grouped')}
+              title="分組視圖"
             >
               <span className="material-symbols-outlined text-base">view_list</span>
             </button>
@@ -235,7 +244,7 @@ export default function AlertsPage() {
                     {/* Center: badge + confidence bar */}
                     <div className="flex flex-col gap-1.5 flex-1 min-w-0">
                       {rec ? (
-                        <span className={`self-start text-xs font-semibold rounded-full px-2.5 py-0.5 ${recommendationBgColor(rec)}`}>
+                        <span className={`self-start text-xs font-semibold rounded-full px-2.5 py-0.5 ${alertBadgeSolid(rec)}`}>
                           {rec}
                         </span>
                       ) : (
