@@ -3,6 +3,8 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { AuthProvider, useAuth } from './contexts/AuthContext'
 import LoginPage from './pages/LoginPage'
 import DashboardPage from './pages/DashboardPage'
+import AlertsPage from './pages/AlertsPage'
+import AlertDetailPage from './pages/AlertDetailPage'
 import AppShell from './components/layout/AppShell'
 
 const queryClient = new QueryClient()
@@ -48,8 +50,8 @@ function AppRoutes() {
         }
       >
         <Route path="/" element={<DashboardPage />} />
-        <Route path="/alerts" element={<div className="text-white">Alerts (coming soon)</div>} />
-        <Route path="/alerts/:id" element={<div className="text-white">Alert Detail (coming soon)</div>} />
+        <Route path="/alerts" element={<AlertsPage />} />
+        <Route path="/alerts/:id" element={<AlertDetailPage />} />
         <Route path="/tracking" element={<div className="text-white">Tracking (coming soon)</div>} />
         <Route path="/favorites" element={<div className="text-white">Favorites (coming soon)</div>} />
         <Route path="/lessons" element={<div className="text-white">Lessons (coming soon)</div>} />
