@@ -8,7 +8,6 @@ export interface TrackedTrade {
   analysis_id: string
   user_id: string
   ticker: string
-  exchange: string
   recommendation: 'BUY' | 'SELL'
   entry_price: number
   stop_loss: number
@@ -16,10 +15,10 @@ export interface TrackedTrade {
   confidence: number
   status: 'tracking' | 'success' | 'failed' | 'expired'
   current_price: number
-  result_reason: string
+  notes: string
   pnl_percent: number
   created_at: string
-  closed_at: string | null
+  resolved_at: string | null
   expires_at: string
 }
 
@@ -30,7 +29,6 @@ export async function autoTrackTrade(
   userId: string,
   analysisId: string,
   ticker: string,
-  exchange: string,
   analysis: AnalysisResult
 ): Promise<TrackedTrade | null> {
   // Only track BUY/SELL with sufficient confidence
@@ -61,7 +59,6 @@ export async function autoTrackTrade(
       analysis_id: analysisId,
       user_id: userId,
       ticker,
-      exchange,
       recommendation: analysis.recommendation,
       entry_price: entry,
       stop_loss: sl,
@@ -158,8 +155,8 @@ async function checkSingleTrade(trade: TrackedTrade): Promise<TrackedTrade | nul
 
   if (status !== 'tracking') {
     updates.status = status
-    updates.result_reason = reason
-    updates.closed_at = new Date().toISOString()
+    updates.notes = reason
+    updates.resolved_at = new Date().toISOString()
   }
 
   const { data } = await adminClient

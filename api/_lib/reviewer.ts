@@ -26,7 +26,7 @@ export async function reviewTrade(trade: TrackedTrade): Promise<string | null> {
   const prompt = `你是一個資深交易檢討分析師。以下是一筆交易的結果，請分析為什麼這筆交易${trade.status === 'failed' ? '失敗' : '未能達成目標'}，並給出具體的教訓。
 
 ## 交易資訊
-- 股票: ${trade.ticker} (${trade.exchange})
+- 股票: ${trade.ticker}
 - 建議: ${recZh}
 - 進場價: $${trade.entry_price}
 - 停損: $${trade.stop_loss}
@@ -38,7 +38,7 @@ export async function reviewTrade(trade: TrackedTrade): Promise<string | null> {
 - 狀態: ${statusZh}
 - 當前價格: $${trade.current_price}
 - 損益: ${Number(trade.pnl_percent) > 0 ? '+' : ''}${trade.pnl_percent}%
-- 原因: ${trade.result_reason}
+- 原因: ${trade.notes}
 
 ## 原始 AI 分析
 ${originalSummary}
@@ -68,17 +68,20 @@ ${originalSummary}
     const parsed = JSON.parse(jsonMatch[0])
 
     // Save lesson to database with structured fields
+    const whatHappened = parsed.what_happened || ''
+    const lessonLearned = parsed.lesson_learned || ''
+    const lessonText = [whatHappened, lessonLearned].filter(Boolean).join(' ')
+
     await adminClient.from('lessons').insert({
-      tracked_trade_id: trade.id,
+      trade_id: trade.id,
       user_id: trade.user_id,
       ticker: trade.ticker,
       lesson_type: parsed.lesson_type || (trade.status === 'success' ? 'success' : trade.status === 'failed' ? 'failure' : 'expired'),
-      key_takeaway: parsed.key_takeaway || '',
+      lesson_text: lessonText,
+      key_takeaway: parsed.lesson_learned || parsed.key_takeaway || '',
       tags: parsed.tags || [],
       original_analysis: originalSummary,
       market_conditions: parsed.market_conditions || '',
-      what_happened: parsed.what_happened || '',
-      lesson_learned: parsed.lesson_learned || '',
     })
 
     return parsed.lesson_learned
@@ -124,7 +127,7 @@ export async function getRecentLessons(userId: string, ticker: string): Promise<
 
   const lessonsText = sorted.map((l, i) => {
     const typeZh = l.lesson_type === 'failure' ? '失敗' : l.lesson_type === 'expired' ? '過期' : '成功'
-    return `${i + 1}. [${typeZh}] ${l.ticker}: ${l.lesson_learned}`
+    return `${i + 1}. [${typeZh}] ${l.ticker}: ${l.key_takeaway}`
   }).join('\n')
 
   return `\n## 近期交易教訓（請參考避免重複錯誤）\n${lessonsText}\n`

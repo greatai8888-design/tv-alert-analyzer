@@ -95,7 +95,7 @@ export default withErrorHandler(async (req: VercelRequest, res: VercelResponse) 
 
     // Auto-track trade
     if (analysisRecord) {
-      const tracked = await autoTrackTrade(userId, analysisRecord.id, ticker, exchange, analysis)
+      const tracked = await autoTrackTrade(userId, analysisRecord.id, ticker, analysis)
       if (tracked) {
         console.log(`Auto-tracked: ${ticker} ${analysis.recommendation} @ $${tracked.entry_price}`)
       }
@@ -103,8 +103,9 @@ export default withErrorHandler(async (req: VercelRequest, res: VercelResponse) 
   }
 
   // Send Telegram notification (only BUY/SELL with confidence >= MIN_CONFIDENCE)
+  // Fire-and-forget so it doesn't block the webhook response
   if (analysis.recommendation !== 'HOLD' && analysis.confidence >= config.MIN_CONFIDENCE) {
-    await sendAnalysisToTelegram(alert, analysis, charts.daily, price)
+    sendAnalysisToTelegram(alert, analysis, charts.daily, price).catch(err => console.error('Telegram error:', err.message))
   }
 
   return res.status(200).json({
