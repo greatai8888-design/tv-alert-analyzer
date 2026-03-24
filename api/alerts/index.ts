@@ -15,26 +15,23 @@ export default withErrorHandler(async (req: VercelRequest, res: VercelResponse) 
   const dateFrom = req.query.date_from as string
   const dateTo = req.query.date_to as string
 
+  const selectClause = recommendation
+    ? '*, analyses!inner(*)'
+    : '*, analyses(*)'
+
   let query = supabase
     .from('alerts')
-    .select('*, analyses(*)')
+    .select(selectClause, { count: 'exact' })
     .order('created_at', { ascending: false })
     .range(offset, offset + limit - 1)
 
   if (ticker) query = query.ilike('ticker', `%${ticker}%`)
   if (dateFrom) query = query.gte('created_at', dateFrom)
   if (dateTo) query = query.lte('created_at', dateTo)
+  if (recommendation) query = (query as any).eq('analyses.recommendation', recommendation.toUpperCase())
 
   const { data, error, count } = await query
   if (error) throw error
 
-  // Filter by recommendation if specified (needs post-query filter since it's in analyses)
-  let filtered = data
-  if (recommendation && data) {
-    filtered = data.filter((a: any) =>
-      a.analyses?.some((an: any) => an.recommendation === recommendation.toUpperCase())
-    )
-  }
-
-  return res.status(200).json({ data: filtered, total: count })
+  return res.status(200).json({ data, total: count })
 })

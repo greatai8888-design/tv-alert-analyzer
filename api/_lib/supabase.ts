@@ -1,6 +1,7 @@
 import { createClient } from '@supabase/supabase-js'
 import type { VercelRequest } from '@vercel/node'
 import { config } from './config'
+import { HttpError } from './errors'
 
 // Admin client for webhook/cron (bypasses RLS)
 export const adminClient = createClient(config.SUPABASE_URL, config.SUPABASE_SERVICE_ROLE_KEY)
@@ -8,7 +9,7 @@ export const adminClient = createClient(config.SUPABASE_URL, config.SUPABASE_SER
 // User client from JWT (respects RLS)
 export function createUserClient(req: VercelRequest) {
   const token = req.headers.authorization?.replace('Bearer ', '')
-  if (!token) throw new Error('Missing authorization header')
+  if (!token) throw new HttpError(401, 'Missing authorization header', 'UNAUTHORIZED')
 
   return createClient(config.SUPABASE_URL, config.SUPABASE_ANON_KEY, {
     global: { headers: { Authorization: `Bearer ${token}` } },

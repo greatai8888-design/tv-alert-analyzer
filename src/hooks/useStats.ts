@@ -9,6 +9,7 @@ export function useStats() {
       const { data: trades, error } = await supabase
         .from('tracked_trades')
         .select('*')
+        .limit(1000)
 
       if (error) throw error
 
