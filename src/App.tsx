@@ -1,7 +1,8 @@
-import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom'
+import { BrowserRouter, Routes, Route, Navigate, Outlet } from 'react-router-dom'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { AuthProvider, useAuth } from './contexts/AuthContext'
 import LoginPage from './pages/LoginPage'
+import AppShell from './components/layout/AppShell'
 
 const queryClient = new QueryClient()
 
@@ -34,41 +35,26 @@ function AppRoutes() {
   return (
     <Routes>
       <Route path="/login" element={user ? <Navigate to="/" replace /> : <LoginPage />} />
-      <Route path="/" element={
-        <ProtectedRoute>
-          <div className="p-8 text-white">Dashboard (coming soon)</div>
-        </ProtectedRoute>
-      } />
-      <Route path="/alerts" element={
-        <ProtectedRoute>
-          <div className="p-8 text-white">Alerts (coming soon)</div>
-        </ProtectedRoute>
-      } />
-      <Route path="/alerts/:id" element={
-        <ProtectedRoute>
-          <div className="p-8 text-white">Alert Detail (coming soon)</div>
-        </ProtectedRoute>
-      } />
-      <Route path="/tracking" element={
-        <ProtectedRoute>
-          <div className="p-8 text-white">Tracking (coming soon)</div>
-        </ProtectedRoute>
-      } />
-      <Route path="/favorites" element={
-        <ProtectedRoute>
-          <div className="p-8 text-white">Favorites (coming soon)</div>
-        </ProtectedRoute>
-      } />
-      <Route path="/lessons" element={
-        <ProtectedRoute>
-          <div className="p-8 text-white">Lessons (coming soon)</div>
-        </ProtectedRoute>
-      } />
-      <Route path="/settings" element={
-        <ProtectedRoute>
-          <div className="p-8 text-white">Settings (coming soon)</div>
-        </ProtectedRoute>
-      } />
+
+      {/* Protected routes wrapped in AppShell */}
+      <Route
+        element={
+          <ProtectedRoute>
+            <AppShell>
+              <Outlet />
+            </AppShell>
+          </ProtectedRoute>
+        }
+      >
+        <Route path="/" element={<div className="text-white">Dashboard (coming soon)</div>} />
+        <Route path="/alerts" element={<div className="text-white">Alerts (coming soon)</div>} />
+        <Route path="/alerts/:id" element={<div className="text-white">Alert Detail (coming soon)</div>} />
+        <Route path="/tracking" element={<div className="text-white">Tracking (coming soon)</div>} />
+        <Route path="/favorites" element={<div className="text-white">Favorites (coming soon)</div>} />
+        <Route path="/lessons" element={<div className="text-white">Lessons (coming soon)</div>} />
+        <Route path="/settings" element={<div className="text-white">Settings (coming soon)</div>} />
+      </Route>
+
       <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>
   )
