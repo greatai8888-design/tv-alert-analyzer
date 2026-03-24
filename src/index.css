@@ -1,0 +1,18 @@
+@import "tailwindcss";
+
+:root {
+  --color-bg-primary: #0f1419;
+  --color-bg-secondary: #1a1f2e;
+  --color-bg-card: #1e2433;
+  --color-border: #2a3142;
+  --color-text-primary: #e4e8ef;
+  --color-text-secondary: #8b95a8;
+  --color-buy: #22c55e;
+  --color-sell: #ef4444;
+  --color-hold: #f59e0b;
+}
+
+body {
+  background-color: var(--color-bg-primary);
+  color: var(--color-text-primary);
+}
