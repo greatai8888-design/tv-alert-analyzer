@@ -1,11 +1,11 @@
 import { NavLink } from 'react-router-dom'
 
 const navItems = [
-  { label: 'Dashboard', icon: 'insights', path: '/' },
-  { label: 'Alerts', icon: 'notifications', path: '/alerts' },
-  { label: 'Tracking', icon: 'monitoring', path: '/tracking' },
-  { label: 'Favorites', icon: 'star', path: '/favorites' },
-  { label: 'Lessons', icon: 'auto_stories', path: '/lessons' },
+  { label: '首頁', icon: 'insights', path: '/' },
+  { label: '警報', icon: 'notifications', path: '/alerts' },
+  { label: '追蹤', icon: 'monitoring', path: '/tracking' },
+  { label: '收藏', icon: 'star', path: '/favorites' },
+  { label: '教訓', icon: 'auto_stories', path: '/lessons' },
 ]
 
 export default function MobileNav() {

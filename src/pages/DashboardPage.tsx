@@ -17,10 +17,10 @@ function timeAgo(dateStr: string): string {
   const diff = Date.now() - new Date(dateStr).getTime()
   const mins = Math.floor(diff / 60_000)
   if (mins < 1) return '剛剛'
-  if (mins < 60) return `${mins}m ago`
+  if (mins < 60) return `${mins} 分鐘前`
   const hrs = Math.floor(mins / 60)
-  if (hrs < 24) return `${hrs}h ago`
-  return `${Math.floor(hrs / 24)}d ago`
+  if (hrs < 24) return `${hrs} 小時前`
+  return `${Math.floor(hrs / 24)} 天前`
 }
 
 function alertLeftBorderColor(rec: string): string {
@@ -32,6 +32,15 @@ function alertLeftBorderColor(rec: string): string {
   }
 }
 
+function recLabel(rec: string): string {
+  switch (rec) {
+    case 'BUY': return '買入'
+    case 'SELL': return '賣出'
+    case 'HOLD': return '觀望'
+    default: return rec
+  }
+}
+
 function getLatestRec(alert: Alert): string {
   const recommendation = alert.analyses?.[0]?.recommendation
   if (recommendation) return recommendation
@@ -40,7 +49,19 @@ function getLatestRec(alert: Alert): string {
 
 function getLatestAnalysis(alert: Alert) {
   if (!alert.analyses || alert.analyses.length === 0) return null
-  return alert.analyses[alert.analyses.length - 1]
+  return alert.analyses[0]
+}
+
+function confidenceColor(confidence: number): string {
+  if (confidence >= 70) return 'bg-primary'
+  if (confidence >= 40) return 'bg-warning'
+  return 'bg-tertiary'
+}
+
+function confidenceTextColor(confidence: number): string {
+  if (confidence >= 70) return 'text-primary-dark'
+  if (confidence >= 40) return 'text-warning-dark'
+  return 'text-tertiary'
 }
 
 // ─── sub-components ──────────────────────────────────────────────────────────
@@ -54,7 +75,7 @@ function AlertChip({ alert }: { alert: Alert }) {
     >
       <span className="font-semibold text-on-surface text-sm">{alert.ticker}</span>
       <span className={`text-[10px] font-medium px-1.5 py-0.5 rounded-full ${recommendationBgColor(rec)}`}>
-        {rec}
+        {recLabel(rec)}
       </span>
       <span className="mono-data text-[11px] text-on-surface-variant">{formatPrice(alert.price)}</span>
       <span className="text-[11px] text-on-surface-variant">{timeAgo(alert.created_at)}</span>
@@ -86,7 +107,7 @@ function SignalCard({ alert }: { alert: Alert }) {
     <div className="bg-white border border-border rounded-xl p-4 relative">
       {/* Badge top-right */}
       <span className={`absolute top-3 right-3 text-[10px] font-medium px-2 py-0.5 rounded-full ${recommendationBgColor(rec)}`}>
-        {rec}
+        {recLabel(rec)}
       </span>
 
       {/* Ticker + name */}
@@ -97,15 +118,15 @@ function SignalCard({ alert }: { alert: Alert }) {
         )}
       </div>
 
-      {/* Confidence bar */}
+      {/* Confidence bar with color */}
       <div className="mb-3">
         <div className="flex items-center justify-between mb-1">
           <span className="text-[11px] text-on-surface-variant uppercase tracking-wider">信心度</span>
-          <span className="mono-data text-[11px] text-on-surface-variant">{confidence}%</span>
+          <span className={`mono-data text-[11px] font-semibold ${confidenceTextColor(confidence)}`}>{confidence}%</span>
         </div>
-        <div className="h-1 rounded-full bg-surface overflow-hidden">
+        <div className="h-1.5 rounded-full bg-surface overflow-hidden">
           <div
-            className="h-full rounded-full bg-primary transition-all"
+            className={`h-full rounded-full ${confidenceColor(confidence)} transition-all`}
             style={{ width: `${Math.min(confidence, 100)}%` }}
           />
         </div>
@@ -115,17 +136,17 @@ function SignalCard({ alert }: { alert: Alert }) {
       <div className="flex flex-wrap gap-1.5">
         {analysis?.entry_price != null && (
           <span className="mono-data text-[10px] bg-surface rounded px-2 py-1 text-on-surface-variant">
-            進 {formatPrice(analysis.entry_price)}
+            進場 {formatPrice(analysis.entry_price)}
           </span>
         )}
         {analysis?.stop_loss != null && (
-          <span className="mono-data text-[10px] bg-surface rounded px-2 py-1 text-on-surface-variant">
-            SL {formatPrice(analysis.stop_loss)}
+          <span className="mono-data text-[10px] bg-tertiary-light rounded px-2 py-1 text-tertiary-dark">
+            止損 {formatPrice(analysis.stop_loss)}
           </span>
         )}
         {analysis?.take_profit != null && (
-          <span className="mono-data text-[10px] bg-surface rounded px-2 py-1 text-on-surface-variant">
-            TP {formatPrice(analysis.take_profit)}
+          <span className="mono-data text-[10px] bg-primary-light rounded px-2 py-1 text-primary-dark">
+            目標 {formatPrice(analysis.take_profit)}
           </span>
         )}
       </div>
@@ -141,6 +162,8 @@ function TradeRow({ trade, index }: { trade: TrackedTrade; index: number }) {
     ? (isProfit ? 'bg-primary' : 'bg-tertiary')
     : trade.status === 'success' ? 'bg-primary' : 'bg-tertiary'
 
+  const statusLabel = trade.status === 'tracking' ? '追蹤中' : trade.status === 'success' ? '成功' : trade.status === 'failed' ? '失敗' : '過期'
+
   return (
     <tr className={isEven ? 'bg-white' : 'bg-background'}>
       <td className="px-4 py-3 text-sm font-semibold text-on-surface">{trade.ticker}</td>
@@ -152,7 +175,7 @@ function TradeRow({ trade, index }: { trade: TrackedTrade; index: number }) {
       <td className="px-4 py-3 text-center">
         <span className={`inline-flex items-center gap-1.5 text-[11px] font-medium px-2 py-0.5 rounded-full ${statusColor(trade.status)}`}>
           <span className={`w-1.5 h-1.5 rounded-full ${dotColor}`} />
-          {trade.status}
+          {statusLabel}
         </span>
       </td>
     </tr>
@@ -192,7 +215,10 @@ export default function DashboardPage() {
         {alertsLoading ? (
           <div className="h-12 flex items-center text-sm text-on-surface-variant">載入中…</div>
         ) : recentAlerts.length === 0 ? (
-          <div className="text-sm text-on-surface-variant">尚無訊號</div>
+          <div className="flex flex-col items-center py-8 gap-2 text-on-surface-variant">
+            <span className="material-symbols-outlined text-4xl text-border">signal_cellular_alt</span>
+            <p className="text-sm">尚無訊號，等待 TradingView 警報觸發</p>
+          </div>
         ) : (
           <div className="flex gap-2 overflow-x-auto no-scrollbar pb-1">
             {recentAlerts.map(alert => (
@@ -216,7 +242,7 @@ export default function DashboardPage() {
             borderColor="border-l-primary"
           />
           <StatCard
-            label="平均 PnL"
+            label="平均損益"
             value={stats ? formatPercent(stats.avgPnl) : '—'}
             borderColor="border-l-primary"
           />
@@ -231,13 +257,16 @@ export default function DashboardPage() {
       {/* ── 3. Top Signals ───────────────────────────────────────────────── */}
       <section>
         <div className="flex items-center justify-between mb-4">
-          <h2 className="serif-heading text-xl text-on-surface">Top Signals</h2>
+          <h2 className="serif-heading text-xl text-on-surface">精選訊號</h2>
           <Link to="/alerts" className="text-sm text-secondary hover:underline font-medium">
-            View All
+            查看全部
           </Link>
         </div>
         {topSignals.length === 0 && !alertsLoading ? (
-          <p className="text-sm text-on-surface-variant">尚無高信心度訊號</p>
+          <div className="flex flex-col items-center py-8 gap-2 text-on-surface-variant">
+            <span className="material-symbols-outlined text-4xl text-border">auto_awesome</span>
+            <p className="text-sm">尚無高信心度訊號</p>
+          </div>
         ) : (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
             {topSignals.map(alert => (
@@ -252,22 +281,29 @@ export default function DashboardPage() {
       {/* ── 4. Active Trades Table ───────────────────────────────────────── */}
       <section>
         <div className="flex items-center justify-between mb-4">
-          <h2 className="serif-heading text-xl text-on-surface">Active Trades</h2>
+          <h2 className="serif-heading text-xl text-on-surface">追蹤中的交易</h2>
+          <Link to="/tracking" className="text-sm text-secondary hover:underline font-medium">
+            查看全部
+          </Link>
         </div>
 
         {activeTrades.length === 0 ? (
-          <div className="bg-white border border-border rounded-xl px-6 py-8 text-center text-sm text-on-surface-variant">
-            目前沒有追蹤中的交易
+          <div className="bg-white border border-border rounded-xl px-6 py-8 text-center">
+            <span className="material-symbols-outlined text-4xl text-border mb-2">trending_up</span>
+            <p className="text-sm text-on-surface-variant">目前沒有追蹤中的交易</p>
+            <Link to="/alerts" className="text-sm text-secondary hover:underline font-medium mt-2 inline-block">
+              前往警報頁面開始追蹤
+            </Link>
           </div>
         ) : (
           <div className="bg-white border border-border rounded-xl overflow-hidden">
             <table className="w-full text-left">
               <thead>
                 <tr className="border-b border-border">
-                  <th className="px-4 py-3 text-[11px] uppercase tracking-wider font-medium text-on-surface-variant">Ticker</th>
+                  <th className="px-4 py-3 text-[11px] uppercase tracking-wider font-medium text-on-surface-variant">股票</th>
                   <th className="px-4 py-3 text-[11px] uppercase tracking-wider font-medium text-on-surface-variant">進場</th>
                   <th className="px-4 py-3 text-[11px] uppercase tracking-wider font-medium text-on-surface-variant">現價</th>
-                  <th className="px-4 py-3 text-[11px] uppercase tracking-wider font-medium text-on-surface-variant text-right">P&L</th>
+                  <th className="px-4 py-3 text-[11px] uppercase tracking-wider font-medium text-on-surface-variant text-right">損益</th>
                   <th className="px-4 py-3 text-[11px] uppercase tracking-wider font-medium text-on-surface-variant text-center">狀態</th>
                 </tr>
               </thead>

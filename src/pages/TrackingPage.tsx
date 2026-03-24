@@ -1,71 +1,92 @@
 import { useState } from 'react'
+import { Link } from 'react-router-dom'
 import { useTrackedTrades } from '../hooks/useTracking'
 import { formatPrice, formatPercent, formatDate, recommendationBgColor, statusColor, pnlColor } from '../lib/utils'
 import type { TrackedTrade } from '../types'
 
 const FILTER_TABS = [
-  { label: 'All', value: '' },
-  { label: 'Tracking', value: 'tracking' },
-  { label: 'Success', value: 'success' },
-  { label: 'Failed', value: 'failed' },
-  { label: 'Expired', value: 'expired' },
+  { label: '全部', value: '' },
+  { label: '追蹤中', value: 'tracking' },
+  { label: '成功', value: 'success' },
+  { label: '失敗', value: 'failed' },
+  { label: '過期', value: 'expired' },
 ] as const
+
+function statusLabel(status: string): string {
+  switch (status) {
+    case 'tracking': return '追蹤中'
+    case 'success': return '成功'
+    case 'failed': return '失敗'
+    case 'expired': return '過期'
+    default: return status
+  }
+}
+
+function recLabel(rec: string): string {
+  switch (rec) {
+    case 'BUY': return '買入'
+    case 'SELL': return '賣出'
+    default: return rec
+  }
+}
 
 function TradeCard({ trade }: { trade: TrackedTrade }) {
   const isPositive = (trade.pnl_percent ?? 0) >= 0
 
   return (
-    <div className="bg-white border border-border rounded-[10px] editorial-shadow hover:scale-[1.01] transition-transform p-4 flex flex-col gap-3">
-      {/* Top row */}
-      <div className="flex items-start justify-between gap-2">
-        <span className="serif-heading text-[22px] leading-tight text-on-surface">{trade.ticker}</span>
-        <div className="flex items-center gap-1.5 flex-wrap justify-end">
-          <span className={`text-[11px] font-medium px-2 py-0.5 rounded-full ${recommendationBgColor(trade.recommendation)}`}>
-            {trade.recommendation}
-          </span>
-          <span className={`text-[11px] px-2 py-0.5 rounded-full ${statusColor(trade.status)}`}>
-            {trade.status === 'tracking' ? 'Active' : trade.status === 'expired' ? 'Expired' : trade.status.charAt(0).toUpperCase() + trade.status.slice(1)}
-          </span>
+    <Link to={`/alerts`} className="block">
+      <div className="bg-white border border-border rounded-[10px] editorial-shadow hover:scale-[1.01] transition-transform p-4 flex flex-col gap-3">
+        {/* Top row */}
+        <div className="flex items-start justify-between gap-2">
+          <span className="serif-heading text-[22px] leading-tight text-on-surface">{trade.ticker}</span>
+          <div className="flex items-center gap-1.5 flex-wrap justify-end">
+            <span className={`text-[11px] font-medium px-2 py-0.5 rounded-full ${recommendationBgColor(trade.recommendation)}`}>
+              {recLabel(trade.recommendation)}
+            </span>
+            <span className={`text-[11px] px-2 py-0.5 rounded-full ${statusColor(trade.status)}`}>
+              {statusLabel(trade.status)}
+            </span>
+          </div>
+        </div>
+
+        {/* Price row */}
+        <div className="mono-data text-[13px] text-on-surface-variant">
+          進場 {formatPrice(trade.entry_price)}
+          <span className="mx-1.5 text-border">→</span>
+          現價 {trade.current_price != null ? formatPrice(trade.current_price) : <span className="italic">—</span>}
+        </div>
+
+        {/* PnL */}
+        <div className={`serif-heading text-[28px] leading-none ${pnlColor(trade.pnl_percent)}`}>
+          {trade.pnl_percent != null ? (
+            <>
+              <span className="mr-1 text-[20px]">{isPositive ? '▲' : '▼'}</span>
+              {formatPercent(trade.pnl_percent)}
+            </>
+          ) : (
+            <span className="text-[20px] text-on-surface-variant">—</span>
+          )}
+        </div>
+
+        {/* Bottom section */}
+        <div className="border-t border-border pt-3 flex flex-col gap-1.5">
+          <div className="flex items-center justify-between text-[12px] text-on-surface-variant">
+            <span>信心指數 {trade.confidence}%</span>
+            <span>開始日期 {new Date(trade.created_at).toLocaleDateString('zh-TW')}</span>
+          </div>
+          <div className="relative h-1.5 rounded-full bg-surface overflow-hidden">
+            <div
+              className={`absolute inset-y-0 left-0 rounded-full ${trade.confidence >= 70 ? 'bg-primary' : trade.confidence >= 40 ? 'bg-warning' : 'bg-tertiary'}`}
+              style={{ width: `${trade.confidence}%` }}
+            />
+          </div>
         </div>
       </div>
-
-      {/* Price row */}
-      <div className="mono-data text-[13px] text-on-surface-variant">
-        進場 {formatPrice(trade.entry_price)}
-        <span className="mx-1.5 text-border">→</span>
-        現價 {trade.current_price != null ? formatPrice(trade.current_price) : <span className="italic">—</span>}
-      </div>
-
-      {/* PnL */}
-      <div className={`serif-heading text-[28px] leading-none ${pnlColor(trade.pnl_percent)}`}>
-        {trade.pnl_percent != null ? (
-          <>
-            <span className="mr-1 text-[20px]">{isPositive ? '▲' : '▼'}</span>
-            {formatPercent(trade.pnl_percent)}
-          </>
-        ) : (
-          <span className="text-[20px] text-on-surface-variant">—</span>
-        )}
-      </div>
-
-      {/* Bottom section */}
-      <div className="border-t border-border pt-3 flex flex-col gap-1.5">
-        <div className="flex items-center justify-between text-[12px] text-on-surface-variant">
-          <span>信心指數 {trade.confidence}%</span>
-          <span>開始日期 {new Date(trade.created_at).toLocaleDateString('zh-TW')}</span>
-        </div>
-        <div className="relative h-1.5 rounded-full bg-surface overflow-hidden">
-          <div
-            className="absolute inset-y-0 left-0 rounded-full bg-info"
-            style={{ width: `${trade.confidence}%` }}
-          />
-        </div>
-      </div>
-    </div>
+    </Link>
   )
 }
 
-function SettledTradesTable({ trades, onViewAll }: { trades: TrackedTrade[]; onViewAll: () => void }) {
+function SettledTradesTable({ trades }: { trades: TrackedTrade[] }) {
   const settled = trades.filter(t => t.status === 'success' || t.status === 'failed' || t.status === 'expired')
   if (settled.length === 0) return null
 
@@ -83,10 +104,10 @@ function SettledTradesTable({ trades, onViewAll }: { trades: TrackedTrade[]; onV
         <table className="w-full text-sm">
           <thead>
             <tr className="bg-surface">
-              <th className="px-4 py-3 text-left text-[10px] uppercase tracking-wider text-on-surface-variant font-semibold">Ticker</th>
-              <th className="px-4 py-3 text-left text-[10px] uppercase tracking-wider text-on-surface-variant font-semibold">Signal</th>
-              <th className="px-4 py-3 text-right text-[10px] uppercase tracking-wider text-on-surface-variant font-semibold">Result (P&amp;L)</th>
-              <th className="px-4 py-3 text-right text-[10px] uppercase tracking-wider text-on-surface-variant font-semibold">Date</th>
+              <th className="px-4 py-3 text-left text-[10px] uppercase tracking-wider text-on-surface-variant font-semibold">股票</th>
+              <th className="px-4 py-3 text-left text-[10px] uppercase tracking-wider text-on-surface-variant font-semibold">方向</th>
+              <th className="px-4 py-3 text-right text-[10px] uppercase tracking-wider text-on-surface-variant font-semibold">損益</th>
+              <th className="px-4 py-3 text-right text-[10px] uppercase tracking-wider text-on-surface-variant font-semibold">日期</th>
             </tr>
           </thead>
           <tbody>
@@ -98,7 +119,7 @@ function SettledTradesTable({ trades, onViewAll }: { trades: TrackedTrade[]; onV
                 <td className="px-4 py-3 serif-heading text-[15px] text-on-surface">{trade.ticker}</td>
                 <td className="px-4 py-3">
                   <span className={`text-[11px] px-2 py-0.5 rounded-full font-medium ${recommendationBgColor(trade.recommendation)}`}>
-                    {trade.recommendation}
+                    {recLabel(trade.recommendation)}
                   </span>
                 </td>
                 <td className={`px-4 py-3 text-right mono-data text-[13px] font-medium ${pnlColor(trade.pnl_percent)}`}>
@@ -111,11 +132,6 @@ function SettledTradesTable({ trades, onViewAll }: { trades: TrackedTrade[]; onV
             ))}
           </tbody>
         </table>
-        <div className="px-4 py-3 border-t border-border flex justify-end">
-          <button onClick={onViewAll} className="text-[13px] text-info hover:underline font-medium">
-            View full history
-          </button>
-        </div>
       </div>
     </div>
   )
@@ -129,14 +145,13 @@ export default function TrackingPage() {
 
   return (
     <div className="max-w-5xl mx-auto">
-      {/* Editorial Header */}
+      {/* Header */}
       <div className="mb-8">
         <h1 className="serif-heading text-[36px] md:text-[44px] leading-tight text-on-surface">
-          The Portfolio{' '}
-          <em className="text-primary not-italic" style={{ fontStyle: 'italic' }}>Live Ledger</em>
+          交易追蹤
         </h1>
-        <p className="mt-2 text-[14px] text-on-surface-variant" style={{ fontFamily: 'var(--font-serif)', fontStyle: 'italic' }}>
-          Real-time tracking of active positions and historical performance.
+        <p className="mt-2 text-[14px] text-on-surface-variant">
+          即時追蹤持倉表現與歷史績效
         </p>
       </div>
 
@@ -190,9 +205,9 @@ export default function TrackingPage() {
             ) : null
           })()}
 
-          {/* Settled trades table — only show when "All" or settled filter */}
+          {/* Settled trades table */}
           {(activeTab === '' || ['success', 'failed', 'expired'].includes(activeTab)) && (
-            <SettledTradesTable trades={trades} onViewAll={() => setActiveTab('')} />
+            <SettledTradesTable trades={trades} />
           )}
         </>
       )}
@@ -205,8 +220,11 @@ export default function TrackingPage() {
           </span>
           <h2 className="serif-heading text-[22px] text-on-surface">尚無追蹤紀錄</h2>
           <p className="text-sm text-on-surface-variant max-w-xs">
-            前往 Alerts 頁面，開始追蹤你感興趣的交易訊號。
+            前往警報頁面，開始追蹤你感興趣的交易訊號。
           </p>
+          <Link to="/alerts" className="mt-2 px-5 py-2.5 rounded-lg bg-primary text-white text-[13px] font-medium hover:opacity-90 transition-opacity">
+            前往警報
+          </Link>
         </div>
       )}
     </div>

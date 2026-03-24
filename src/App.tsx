@@ -11,6 +11,9 @@ const AlertDetailPage = lazy(() => import('./pages/AlertDetailPage'))
 const TrackingPage = lazy(() => import('./pages/TrackingPage'))
 const FavoritesPage = lazy(() => import('./pages/FavoritesPage'))
 const LessonsPage = lazy(() => import('./pages/LessonsPage'))
+const SettingsPage = lazy(() => import('./pages/SettingsPage'))
+const StrategyPage = lazy(() => import('./pages/StrategyPage'))
+const SimTradingPage = lazy(() => import('./pages/SimTradingPage'))
 
 const queryClient = new QueryClient()
 
@@ -61,7 +64,9 @@ function AppRoutes() {
         <Route path="/tracking" element={<TrackingPage />} />
         <Route path="/favorites" element={<FavoritesPage />} />
         <Route path="/lessons" element={<LessonsPage />} />
-        <Route path="/settings" element={<div className="text-white">Settings (coming soon)</div>} />
+        <Route path="/sim-trading" element={<SimTradingPage />} />
+        <Route path="/strategy" element={<StrategyPage />} />
+        <Route path="/settings" element={<SettingsPage />} />
       </Route>
 
       <Route path="*" element={<Navigate to="/" replace />} />

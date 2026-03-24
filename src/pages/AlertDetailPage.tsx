@@ -13,6 +13,36 @@ function getAnalysis(analyses?: Analysis[]): Analysis | null {
   return analyses && analyses.length > 0 ? analyses[0] : null
 }
 
+function recLabel(rec: string): string {
+  switch (rec) { case 'BUY': return '買入'; case 'SELL': return '賣出'; case 'HOLD': return '觀望'; default: return rec }
+}
+
+function confidenceColor(c: number): string {
+  if (c >= 70) return 'text-primary-dark'
+  if (c >= 40) return 'text-warning-dark'
+  return 'text-tertiary'
+}
+
+function confidenceBgColor(c: number): string {
+  if (c >= 70) return 'bg-primary'
+  if (c >= 40) return 'bg-warning'
+  return 'bg-tertiary'
+}
+
+function rsiColor(rsi: number | null): string {
+  if (rsi == null) return 'text-on-surface'
+  if (rsi >= 70) return 'text-tertiary font-semibold'
+  if (rsi <= 30) return 'text-primary font-semibold'
+  return 'text-on-surface'
+}
+
+function rsiLabel(rsi: number | null): string {
+  if (rsi == null) return ''
+  if (rsi >= 70) return '（超買）'
+  if (rsi <= 30) return '（超賣）'
+  return ''
+}
+
 function MacdBadge({ signal }: { signal: string | null }) {
   if (!signal) return <span className="mono-data text-sm text-on-surface-variant">—</span>
   const lower = signal.toLowerCase()
@@ -21,11 +51,21 @@ function MacdBadge({ signal }: { signal: string | null }) {
     : lower.includes('bear') || lower.includes('sell')
     ? 'bg-tertiary-light text-tertiary-dark border-tertiary/20'
     : 'bg-surface text-on-surface-variant border-border'
+  const label = lower.includes('bull') || lower.includes('buy') ? '看漲'
+    : lower.includes('bear') || lower.includes('sell') ? '看跌' : signal
   return (
     <span className={`mono-data text-xs font-semibold rounded-full px-2 py-0.5 border ${cls}`}>
-      {signal}
+      {label}
     </span>
   )
+}
+
+function volumeLabel(vol: string | null): string {
+  if (!vol) return '—'
+  const lower = vol.toLowerCase()
+  if (lower.includes('increas') || lower.includes('high') || lower.includes('above')) return '放量'
+  if (lower.includes('decreas') || lower.includes('low') || lower.includes('below')) return '縮量'
+  return vol
 }
 
 function IndicatorRow({ label, value, mono = true }: { label: string; value: React.ReactNode; mono?: boolean }) {
@@ -113,7 +153,7 @@ export default function AlertDetailPage() {
   const confidence = analysis?.confidence ?? 0
 
   // Extract news from news_context if available
-  const newsItems: Array<{ title: string; source?: string; publishedAt?: string }> = (() => {
+  const newsItems: Array<{ title: string; source?: string; publishedAt?: string; url?: string }> = (() => {
     if (!analysis?.news_context) return []
     const ctx = analysis.news_context
     if (Array.isArray(ctx)) return ctx as typeof newsItems
@@ -182,15 +222,24 @@ export default function AlertDetailPage() {
           </span>
           {rec && (
             <span className={`text-sm font-semibold rounded-full px-3 py-1 ${recommendationBgColor(rec)}`}>
-              {rec}
+              {recLabel(rec)}
             </span>
           )}
           {analysis && (
             <span className="text-sm text-on-surface-variant">
-              信心度 <span className="mono-data font-semibold text-on-surface">{confidence}%</span>
+              信心度 <span className={`mono-data font-semibold ${confidenceColor(confidence)}`}>{confidence}%</span>
             </span>
           )}
         </div>
+        {/* Confidence bar */}
+        {analysis && (
+          <div className="mt-3 h-2 rounded-full bg-surface overflow-hidden">
+            <div
+              className={`h-full rounded-full ${confidenceBgColor(confidence)} transition-all`}
+              style={{ width: `${confidence}%` }}
+            />
+          </div>
+        )}
         <div className="flex items-center gap-1.5 mt-3 text-on-surface-variant text-xs">
           <span className="material-symbols-outlined text-sm">schedule</span>
           市場數據延遲 15 分鐘
@@ -235,14 +284,12 @@ export default function AlertDetailPage() {
               preserveAspectRatio="none"
             >
               <rect width="400" height="200" fill="#F2EDE4" />
-              {/* Grid lines */}
               {[40, 80, 120, 160].map(y => (
                 <line key={y} x1="0" y1={y} x2="400" y2={y} stroke="#D9D2C7" strokeWidth="0.5" />
               ))}
               {[80, 160, 240, 320].map(x => (
                 <line key={x} x1={x} y1="0" x2={x} y2="200" stroke="#D9D2C7" strokeWidth="0.5" />
               ))}
-              {/* Placeholder chart line */}
               <polyline
                 points="0,160 50,140 100,120 150,130 200,90 250,100 300,70 350,80 400,60"
                 fill="none"
@@ -254,7 +301,6 @@ export default function AlertDetailPage() {
                 fill="#6B7A2E"
                 fillOpacity="0.1"
               />
-              {/* Label */}
               <text x="200" y="110" textAnchor="middle" fill="#8A8078" fontSize="12" fontFamily="IBM Plex Mono, monospace">
                 {activeTab === 'Daily' ? '日線圖表' : activeTab === 'Weekly' ? '週線圖表' : '分時圖表'}
               </text>
@@ -315,7 +361,14 @@ export default function AlertDetailPage() {
           <div className="divide-y divide-border">
             <IndicatorRow
               label="RSI"
-              value={analysis.rsi != null ? analysis.rsi.toFixed(1) : '—'}
+              value={
+                analysis.rsi != null ? (
+                  <span className={`mono-data text-sm ${rsiColor(analysis.rsi)}`}>
+                    {analysis.rsi.toFixed(1)} {rsiLabel(analysis.rsi)}
+                  </span>
+                ) : '—'
+              }
+              mono={false}
             />
             <IndicatorRow
               label="SMA 20"
@@ -345,7 +398,7 @@ export default function AlertDetailPage() {
             {analysis.volume_trend && (
               <IndicatorRow
                 label="成交量趨勢"
-                value={analysis.volume_trend}
+                value={volumeLabel(analysis.volume_trend)}
               />
             )}
           </div>
@@ -371,7 +424,14 @@ export default function AlertDetailPage() {
                     </span>
                   )}
                 </div>
-                <h3 className="serif-heading text-base text-on-surface leading-snug">{item.title}</h3>
+                {item.url ? (
+                  <a href={item.url} target="_blank" rel="noopener noreferrer" className="serif-heading text-base text-on-surface leading-snug hover:text-secondary transition-colors">
+                    {item.title}
+                    <span className="material-symbols-outlined text-sm ml-1 align-middle text-on-surface-variant">open_in_new</span>
+                  </a>
+                ) : (
+                  <h3 className="serif-heading text-base text-on-surface leading-snug">{item.title}</h3>
+                )}
               </div>
             ))}
           </div>

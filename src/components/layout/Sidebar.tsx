@@ -2,12 +2,14 @@ import { NavLink } from 'react-router-dom'
 import { useAuth } from '../../contexts/AuthContext'
 
 const navItems = [
-  { label: 'Dashboard', icon: 'insights', path: '/' },
-  { label: 'Alerts', icon: 'notifications', path: '/alerts' },
-  { label: 'Tracking', icon: 'monitoring', path: '/tracking' },
-  { label: 'Favorites', icon: 'star', path: '/favorites' },
-  { label: 'Lessons', icon: 'auto_stories', path: '/lessons' },
-  { label: 'Settings', icon: 'settings', path: '/settings' },
+  { label: '儀表板', icon: 'insights', path: '/' },
+  { label: '警報', icon: 'notifications', path: '/alerts' },
+  { label: '追蹤', icon: 'monitoring', path: '/tracking' },
+  { label: '收藏', icon: 'star', path: '/favorites' },
+  { label: '教訓', icon: 'auto_stories', path: '/lessons' },
+  { label: 'AI 模擬交易', icon: 'account_balance', path: '/sim-trading' },
+  { label: '分析策略', icon: 'science', path: '/strategy' },
+  { label: '設定', icon: 'settings', path: '/settings' },
 ]
 
 interface SidebarProps {
@@ -102,7 +104,7 @@ export default function Sidebar({ mobile, onClose }: SidebarProps) {
           <span className="material-symbols-outlined text-[18px] leading-none">
             logout
           </span>
-          Sign Out
+          登出
         </button>
       </div>
     </aside>

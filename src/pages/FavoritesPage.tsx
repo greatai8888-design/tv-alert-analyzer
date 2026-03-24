@@ -144,13 +144,13 @@ export default function FavoritesPage() {
           </span>
           <h2 className="serif-heading text-[22px] text-on-surface">尚無收藏</h2>
           <p className="text-sm text-on-surface-variant max-w-xs">
-            在 Alerts 頁面中，點擊星號圖示即可將訊號加入收藏清單。
+            在警報頁面中，點擊星號圖示即可將訊號加入收藏清單。
           </p>
           <Link
             to="/alerts"
             className="mt-2 px-5 py-2.5 rounded-lg bg-primary text-white text-[13px] font-medium hover:opacity-90 transition-opacity"
           >
-            前往 Alerts
+            前往警報
           </Link>
         </div>
       )}

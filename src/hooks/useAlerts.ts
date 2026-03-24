@@ -11,6 +11,7 @@ export function useAlerts(filters?: {
 }) {
   return useQuery({
     queryKey: ['alerts', filters],
+    refetchInterval: 60_000,
     queryFn: async () => {
       let query = supabase
         .from('alerts')

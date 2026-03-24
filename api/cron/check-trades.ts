@@ -4,6 +4,7 @@ import { config } from '../_lib/config.js'
 import { checkTrackedTrades } from '../_lib/tracker.js'
 import { reviewTrade } from '../_lib/reviewer.js'
 import { sendTradeResultToTelegram } from '../_lib/telegram.js'
+import { checkSimTrades } from '../_lib/sim-trader.js'
 
 export default withErrorHandler(async (req: VercelRequest, res: VercelResponse) => {
   // Validate cron secret
@@ -35,8 +36,20 @@ export default withErrorHandler(async (req: VercelRequest, res: VercelResponse) 
     }
   }
 
+  // Also check sim trades (auto-sell at TP/SL, update prices)
+  let simResults = { checked: 0, sold: [] as any[], updated: 0 }
+  try {
+    simResults = await checkSimTrades()
+    if (simResults.sold.length > 0) {
+      console.log(`[SIM] Auto-sold ${simResults.sold.length} trades:`, simResults.sold)
+    }
+  } catch (err: any) {
+    console.error('[SIM] checkSimTrades error:', err.message)
+  }
+
   return res.status(200).json({
     checked: resolvedTrades.length,
     results,
+    sim: simResults,
   })
 })

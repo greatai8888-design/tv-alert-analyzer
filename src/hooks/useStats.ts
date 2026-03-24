@@ -5,6 +5,7 @@ import type { TradingStats } from '../types'
 export function useStats() {
   return useQuery({
     queryKey: ['stats'],
+    refetchInterval: 60_000,
     queryFn: async () => {
       const { data: trades, error } = await supabase
         .from('tracked_trades')

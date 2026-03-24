@@ -11,10 +11,26 @@ type ViewMode = 'grouped' | 'grid'
 function timeAgo(dateStr: string): string {
   const diff = Date.now() - new Date(dateStr).getTime()
   const mins = Math.floor(diff / 60000)
-  if (mins < 60) return `${mins}m 前`
+  if (mins < 1) return '剛剛'
+  if (mins < 60) return `${mins} 分鐘前`
   const hrs = Math.floor(mins / 60)
-  if (hrs < 24) return `${hrs}h 前`
-  return `${Math.floor(hrs / 24)}d 前`
+  if (hrs < 24) return `${hrs} 小時前`
+  return `${Math.floor(hrs / 24)} 天前`
+}
+
+function recLabel(rec: string): string {
+  switch (rec) { case 'BUY': return '買入'; case 'SELL': return '賣出'; case 'HOLD': return '觀望'; default: return rec }
+}
+
+function confidenceBarColor(rec?: string, confidence?: number): string {
+  if (confidence != null) {
+    if (confidence >= 70) return 'bg-primary'
+    if (confidence >= 40) return 'bg-warning'
+    return 'bg-tertiary'
+  }
+  if (rec === 'BUY') return 'bg-primary'
+  if (rec === 'SELL') return 'bg-tertiary'
+  return 'bg-warning'
 }
 
 function getFirstAnalysis(alert: Alert) {
@@ -66,10 +82,10 @@ export default function AlertsPage() {
   }, [filtered])
 
   const filterPills: { label: string; value: FilterType }[] = [
-    { label: 'ALL', value: 'ALL' },
-    { label: 'BUY', value: 'BUY' },
-    { label: 'SELL', value: 'SELL' },
-    { label: 'HOLD', value: 'HOLD' },
+    { label: '全部', value: 'ALL' },
+    { label: '買入', value: 'BUY' },
+    { label: '賣出', value: 'SELL' },
+    { label: '觀望', value: 'HOLD' },
   ]
 
   function filterPillClass(value: FilterType) {
@@ -246,7 +262,7 @@ export default function AlertsPage() {
                     <div className="flex flex-col gap-1.5 flex-1 min-w-0">
                       {rec ? (
                         <span className={`self-start text-xs font-semibold rounded-full px-2.5 py-0.5 ${alertBadgeSolid(rec)}`}>
-                          {rec}
+                          {recLabel(rec)}
                         </span>
                       ) : (
                         <span className="self-start text-xs font-semibold rounded-full px-2.5 py-0.5 bg-surface text-on-surface-variant border border-border">
@@ -255,9 +271,9 @@ export default function AlertsPage() {
                       )}
                       {rec && (
                         <div className="flex items-center gap-1.5">
-                          <div className="flex-1 max-w-[80px] h-1 bg-border rounded-full overflow-hidden">
+                          <div className="flex-1 max-w-[80px] h-1.5 bg-border rounded-full overflow-hidden">
                             <div
-                              className={`h-full rounded-full ${rec === 'BUY' ? 'bg-primary' : rec === 'SELL' ? 'bg-tertiary' : 'bg-warning'}`}
+                              className={`h-full rounded-full ${confidenceBarColor(rec, confidence)}`}
                               style={{ width: `${confidence}%` }}
                             />
                           </div>

@@ -5,6 +5,7 @@ import type { TrackedTrade } from '../types'
 export function useTrackedTrades(status?: string) {
   return useQuery({
     queryKey: ['tracked_trades', status],
+    refetchInterval: 60_000,
     queryFn: async () => {
       let query = supabase
         .from('tracked_trades')

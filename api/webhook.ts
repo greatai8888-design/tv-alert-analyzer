@@ -9,6 +9,7 @@ import { fetchStockData } from './_lib/market-data.js'
 import { fetchStockNews } from './_lib/news.js'
 import { fetchMarketContext } from './_lib/market-context.js'
 import { autoTrackTrade } from './_lib/tracker.js'
+import { simAutoBuy } from './_lib/sim-trader.js'
 import { getRecentLessons } from './_lib/reviewer.js'
 import type { TradingViewAlert } from './_lib/types.js'
 
@@ -99,6 +100,11 @@ export default withErrorHandler(async (req: VercelRequest, res: VercelResponse) 
       if (tracked) {
         console.log(`Auto-tracked: ${ticker} ${analysis.recommendation} @ $${tracked.entry_price}`)
       }
+
+      // AI Sim Auto-Buy (fire-and-forget, never block webhook)
+      simAutoBuy(userId, alertRecord.id, ticker, analysis)
+        .then(r => console.log(`[SIM] ${ticker}: ${r.reason}`))
+        .catch(e => console.error(`[SIM] ${ticker} error:`, e.message))
     }
   }
 
