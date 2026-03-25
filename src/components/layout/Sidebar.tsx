@@ -9,6 +9,7 @@ const navItems = [
   { label: '教訓', icon: 'auto_stories', path: '/lessons' },
   { label: 'AI 模擬交易', icon: 'account_balance', path: '/sim-trading' },
   { label: '分析策略', icon: 'science', path: '/strategy' },
+  { label: '策略檢討', icon: 'assessment', path: '/reviews' },
   { label: '設定', icon: 'settings', path: '/settings' },
 ]
 

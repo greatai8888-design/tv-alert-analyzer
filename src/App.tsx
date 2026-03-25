@@ -14,6 +14,7 @@ const LessonsPage = lazy(() => import('./pages/LessonsPage'))
 const SettingsPage = lazy(() => import('./pages/SettingsPage'))
 const StrategyPage = lazy(() => import('./pages/StrategyPage'))
 const SimTradingPage = lazy(() => import('./pages/SimTradingPage'))
+const ReviewsPage = lazy(() => import('./pages/ReviewsPage'))
 
 const queryClient = new QueryClient()
 
@@ -66,6 +67,7 @@ function AppRoutes() {
         <Route path="/lessons" element={<LessonsPage />} />
         <Route path="/sim-trading" element={<SimTradingPage />} />
         <Route path="/strategy" element={<StrategyPage />} />
+        <Route path="/reviews" element={<ReviewsPage />} />
         <Route path="/settings" element={<SettingsPage />} />
       </Route>
 
