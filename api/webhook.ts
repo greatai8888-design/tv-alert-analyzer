@@ -117,6 +117,22 @@ export default withErrorHandler(async (req: VercelRequest, res: VercelResponse) 
     sendAnalysisToTelegram(alert, analysis, charts.daily, price).catch(err => console.error('Telegram error:', err.message))
   }
 
+  // Create initial alert outcome for tracking
+  if (alertRecord) {
+    adminClient.from('alert_outcomes').upsert({
+      alert_id: alertRecord.id,
+      user_id: userId,
+      ticker,
+      alert_price: parseFloat(price) || 0,
+      alert_date: alertRecord.created_at,
+      ai_recommendation: analysis.recommendation,
+      ai_confidence: analysis.confidence,
+      ai_reasoning: analysis.summary || null,
+    }, { onConflict: 'alert_id', ignoreDuplicates: true }).catch(e =>
+      console.error('[OUTCOMES] Initial insert error:', e.message)
+    )
+  }
+
   return res.status(200).json({
     success: true,
     ticker,

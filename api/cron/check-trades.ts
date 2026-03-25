@@ -5,6 +5,7 @@ import { checkTrackedTrades } from '../_lib/tracker.js'
 import { reviewTrade } from '../_lib/reviewer.js'
 import { sendTradeResultToTelegram } from '../_lib/telegram.js'
 import { checkSimTrades } from '../_lib/sim-trader.js'
+import { updateAlertOutcomes } from '../_lib/outcome-tracker.js'
 
 export default withErrorHandler(async (req: VercelRequest, res: VercelResponse) => {
   // Validate cron secret
@@ -47,9 +48,21 @@ export default withErrorHandler(async (req: VercelRequest, res: VercelResponse) 
     console.error('[SIM] checkSimTrades error:', err.message)
   }
 
+  // Update alert outcomes (1d/3d/7d price tracking)
+  let outcomeResults = { updated: 0, classified: 0 }
+  try {
+    outcomeResults = await updateAlertOutcomes()
+    if (outcomeResults.updated > 0) {
+      console.log(`[OUTCOMES] Updated: ${outcomeResults.updated}, Classified: ${outcomeResults.classified}`)
+    }
+  } catch (err: any) {
+    console.error('[OUTCOMES] Error:', err.message)
+  }
+
   return res.status(200).json({
     checked: resolvedTrades.length,
     results,
     sim: simResults,
+    outcomes: outcomeResults,
   })
 })
