@@ -3,6 +3,7 @@
     { "source": "/((?!api/).*)", "destination": "/index.html" }
   ],
   "crons": [
-    { "path": "/api/cron/check-trades", "schedule": "0 21 * * 1-5" }
+    { "path": "/api/cron/check-trades", "schedule": "0 21 * * 1-5" },
+    { "path": "/api/cron/weekly-review", "schedule": "0 15 * * 0" }
   ]
 }
