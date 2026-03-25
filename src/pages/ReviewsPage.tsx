@@ -1,7 +1,6 @@
 import { useState } from 'react'
 import { useStrategyReviews } from '../hooks/useStrategyReviews'
 import type { StrategyReview } from '../hooks/useStrategyReviews'
-import { formatPrice } from '../lib/utils'
 
 function priorityBadge(priority: string) {
   switch (priority) {
@@ -18,16 +17,6 @@ function priorityLabel(priority: string) {
     case 'medium': return '中'
     case 'low': return '低'
     default: return priority
-  }
-}
-
-function categoryBadge(category: string) {
-  switch (category) {
-    case 'hit': return 'bg-primary-light text-primary-dark'
-    case 'marginal': return 'bg-warning-light text-warning-dark'
-    case 'miss': return 'bg-tertiary-light text-tertiary-dark'
-    case 'missed_opportunity': return 'bg-secondary-light text-secondary-dark'
-    default: return 'bg-surface text-on-surface-variant'
   }
 }
 
