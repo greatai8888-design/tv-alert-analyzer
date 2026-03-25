@@ -101,10 +101,13 @@ export default withErrorHandler(async (req: VercelRequest, res: VercelResponse) 
         console.log(`Auto-tracked: ${ticker} ${analysis.recommendation} @ $${tracked.entry_price}`)
       }
 
-      // AI Sim Auto-Buy (fire-and-forget, never block webhook)
-      simAutoBuy(userId, alertRecord.id, ticker, analysis)
-        .then(r => console.log(`[SIM] ${ticker}: ${r.reason}`))
-        .catch(e => console.error(`[SIM] ${ticker} error:`, e.message))
+      // AI Sim Auto-Buy (awaited to prevent silent failures)
+      try {
+        const simResult = await simAutoBuy(userId, alertRecord.id, ticker, analysis)
+        console.log(`[SIM] ${ticker}: ${simResult.reason}`)
+      } catch (e: any) {
+        console.error(`[SIM] ${ticker} error:`, e.message)
+      }
     }
   }
 
