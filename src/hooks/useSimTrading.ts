@@ -41,6 +41,48 @@ export interface SimTrade {
   updated_at: string
 }
 
+export interface SimTradeLog {
+  id: string
+  trade_id: string | null
+  portfolio_id: string
+  user_id: string
+  action: string
+  ticker: string
+  price: number
+  quantity: number | null
+  cash_before: number
+  cash_after: number
+  pnl: number | null
+  reasoning: string | null
+  created_at: string
+}
+
+// ─── Helper: authenticated fetch ────────────────────────────
+
+async function apiFetch<T>(url: string, options?: RequestInit): Promise<T> {
+  const { data: { session } } = await supabase.auth.getSession()
+  const token = session?.access_token
+  if (!token) throw new Error('Not authenticated')
+
+  const res = await fetch(url, {
+    ...options,
+    headers: {
+      'Content-Type': 'application/json',
+      Authorization: `Bearer ${token}`,
+      ...options?.headers,
+    },
+  })
+
+  if (!res.ok) {
+    const body = await res.json().catch(() => ({ error: res.statusText }))
+    throw new Error(body.error || `API error ${res.status}`)
+  }
+
+  return res.json()
+}
+
+// ─── Read hooks (Supabase direct — fine with RLS) ───────────
+
 export function useSimPortfolio() {
   return useQuery({
     queryKey: ['sim_portfolio'],
@@ -80,25 +122,26 @@ export function useSimTrades(portfolioId?: string, status?: string) {
   })
 }
 
+export function useTradeLog(portfolioId?: string) {
+  return useQuery({
+    queryKey: ['sim_trade_log', portfolioId],
+    enabled: !!portfolioId,
+    queryFn: async () => {
+      return apiFetch<SimTradeLog[]>(`/api/sim-trading?action=log&portfolioId=${portfolioId}&limit=50`)
+    },
+  })
+}
+
+// ─── Write hooks (API-backed) ───────────────────────────────
+
 export function useCreatePortfolio() {
   const queryClient = useQueryClient()
   return useMutation({
     mutationFn: async (capital: number) => {
-      const { data: { user } } = await supabase.auth.getUser()
-      if (!user) throw new Error('Not authenticated')
-
-      const { data, error } = await supabase
-        .from('sim_portfolio')
-        .insert({
-          user_id: user.id,
-          initial_capital: capital,
-          cash_balance: capital,
-          total_value: capital,
-        })
-        .select()
-        .single()
-      if (error) throw error
-      return data as SimPortfolio
+      return apiFetch<SimPortfolio>('/api/sim-trading?action=create', {
+        method: 'POST',
+        body: JSON.stringify({ capital }),
+      })
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['sim_portfolio'] })
@@ -106,123 +149,66 @@ export function useCreatePortfolio() {
   })
 }
 
-export function useSimBuy() {
+export function useManualClose(portfolioId?: string) {
   const queryClient = useQueryClient()
   return useMutation({
-    mutationFn: async (params: {
-      portfolioId: string
-      ticker: string
-      price: number
-      amount: number
-      confidence: number
-      reasoning: string
-      alertId?: string
-      stopLoss?: number
-      takeProfit?: number
-    }) => {
-      const { data: { user } } = await supabase.auth.getUser()
-      if (!user) throw new Error('Not authenticated')
-
-      const quantity = Math.floor((params.amount / params.price) * 100) / 100
-
-      // Insert trade
-      const { error: tradeError } = await supabase.from('sim_trades').insert({
-        user_id: user.id,
-        portfolio_id: params.portfolioId,
-        alert_id: params.alertId || null,
-        ticker: params.ticker,
-        action: 'BUY',
-        quantity,
-        entry_price: params.price,
-        current_price: params.price,
-        confidence: params.confidence,
-        ai_reasoning: params.reasoning,
-        stop_loss: params.stopLoss || null,
-        take_profit: params.takeProfit || null,
-        status: 'open',
+    mutationFn: async (tradeId: string) => {
+      return apiFetch<{ success: boolean; pnl: number; pnl_pct: number }>('/api/sim-trading?action=close', {
+        method: 'POST',
+        body: JSON.stringify({ tradeId }),
       })
-      if (tradeError) throw tradeError
-
-      // Fetch current portfolio and update
-      const { data: portfolio } = await supabase
-        .from('sim_portfolio')
-        .select('cash_balance, total_trades')
-        .eq('id', params.portfolioId)
-        .single()
-
-      if (portfolio) {
-        await supabase
-          .from('sim_portfolio')
-          .update({
-            cash_balance: portfolio.cash_balance - (quantity * params.price),
-            total_trades: portfolio.total_trades + 1,
-            updated_at: new Date().toISOString(),
-          })
-          .eq('id', params.portfolioId)
-      }
-
-      return { quantity, cost: quantity * params.price }
     },
-    onSuccess: () => {
+    onMutate: async (tradeId) => {
+      await queryClient.cancelQueries({ queryKey: ['sim_trades', portfolioId, 'open'] })
+      const prev = queryClient.getQueryData<SimTrade[]>(['sim_trades', portfolioId, 'open'])
+      queryClient.setQueryData<SimTrade[]>(['sim_trades', portfolioId, 'open'], old =>
+        old?.filter(t => t.id !== tradeId) ?? []
+      )
+      return { prev }
+    },
+    onError: (_err, _tradeId, context) => {
+      if (context?.prev) {
+        queryClient.setQueryData(['sim_trades', portfolioId, 'open'], context.prev)
+      }
+    },
+    onSettled: () => {
       queryClient.invalidateQueries({ queryKey: ['sim_portfolio'] })
       queryClient.invalidateQueries({ queryKey: ['sim_trades'] })
+      queryClient.invalidateQueries({ queryKey: ['sim_trade_log'] })
     },
   })
 }
 
-export function useSimSell() {
+export function useUpdateTpSl(portfolioId?: string) {
   const queryClient = useQueryClient()
   return useMutation({
-    mutationFn: async (params: {
-      tradeId: string
-      portfolioId: string
-      exitPrice: number
-      quantity: number
-      entryPrice: number
-    }) => {
-      const pnl = (params.exitPrice - params.entryPrice) * params.quantity
-      const pnlPercent = ((params.exitPrice - params.entryPrice) / params.entryPrice) * 100
-
-      // Close the trade
-      await supabase
-        .from('sim_trades')
-        .update({
-          exit_price: params.exitPrice,
-          pnl: Math.round(pnl * 100) / 100,
-          pnl_percent: Math.round(pnlPercent * 100) / 100,
-          status: 'closed',
-          closed_at: new Date().toISOString(),
-          updated_at: new Date().toISOString(),
-        })
-        .eq('id', params.tradeId)
-
-      // Update portfolio
-      const { data: portfolio } = await supabase
-        .from('sim_portfolio')
-        .select('*')
-        .eq('id', params.portfolioId)
-        .single()
-
-      if (portfolio) {
-        const cashBack = params.exitPrice * params.quantity
-        const newCash = portfolio.cash_balance + cashBack
-        const isWin = pnl > 0
-
-        await supabase
-          .from('sim_portfolio')
-          .update({
-            cash_balance: Math.round(newCash * 100) / 100,
-            total_pnl: Math.round((portfolio.total_pnl + pnl) * 100) / 100,
-            total_pnl_percent: Math.round(((portfolio.total_pnl + pnl) / portfolio.initial_capital) * 10000) / 100,
-            winning_trades: portfolio.winning_trades + (isWin ? 1 : 0),
-            losing_trades: portfolio.losing_trades + (isWin ? 0 : 1),
-            updated_at: new Date().toISOString(),
-          })
-          .eq('id', params.portfolioId)
+    mutationFn: async (params: { tradeId: string; stopLoss?: number | null; takeProfit?: number | null }) => {
+      return apiFetch<{ success: boolean }>('/api/sim-trading?action=update-tp-sl', {
+        method: 'POST',
+        body: JSON.stringify(params),
+      })
+    },
+    onMutate: async (params) => {
+      await queryClient.cancelQueries({ queryKey: ['sim_trades', portfolioId, 'open'] })
+      const prev = queryClient.getQueryData<SimTrade[]>(['sim_trades', portfolioId, 'open'])
+      queryClient.setQueryData<SimTrade[]>(['sim_trades', portfolioId, 'open'], old =>
+        old?.map(t => {
+          if (t.id !== params.tradeId) return t
+          return {
+            ...t,
+            stop_loss: params.stopLoss !== undefined ? (params.stopLoss ?? t.stop_loss) : t.stop_loss,
+            take_profit: params.takeProfit !== undefined ? (params.takeProfit ?? t.take_profit) : t.take_profit,
+          }
+        }) ?? []
+      )
+      return { prev }
+    },
+    onError: (_err, _params, context) => {
+      if (context?.prev) {
+        queryClient.setQueryData(['sim_trades', portfolioId, 'open'], context.prev)
       }
     },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['sim_portfolio'] })
+    onSettled: () => {
       queryClient.invalidateQueries({ queryKey: ['sim_trades'] })
     },
   })
