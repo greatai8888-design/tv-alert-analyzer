@@ -282,6 +282,16 @@ export default function AlertsPage() {
                       )}
                     </div>
 
+                    {/* RR ratio */}
+                    {analysis?.entry_price && analysis?.stop_loss && analysis?.take_profit && analysis.entry_price !== analysis.stop_loss && (
+                      <div className="shrink-0 text-center min-w-[40px]">
+                        <span className="mono-data text-xs font-semibold text-info">
+                          {((analysis.take_profit - analysis.entry_price) / (analysis.entry_price - analysis.stop_loss)).toFixed(1)}
+                        </span>
+                        <div className="text-[9px] text-on-surface-variant">RR</div>
+                      </div>
+                    )}
+
                     {/* Right: time + chevron */}
                     <div className="flex items-center gap-1 text-on-surface-variant shrink-0">
                       <span className="mono-data text-xs">{timeAgo(alert.created_at)}</span>
