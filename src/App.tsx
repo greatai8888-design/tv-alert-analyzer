@@ -15,6 +15,7 @@ const SettingsPage = lazy(() => import('./pages/SettingsPage'))
 const StrategyPage = lazy(() => import('./pages/StrategyPage'))
 const SimTradingPage = lazy(() => import('./pages/SimTradingPage'))
 const ReviewsPage = lazy(() => import('./pages/ReviewsPage'))
+const WatchlistPage = lazy(() => import('./pages/WatchlistPage'))
 
 const queryClient = new QueryClient()
 
@@ -69,6 +70,7 @@ function AppRoutes() {
         <Route path="/strategy" element={<StrategyPage />} />
         <Route path="/reviews" element={<ReviewsPage />} />
         <Route path="/settings" element={<SettingsPage />} />
+        <Route path="/watchlist" element={<WatchlistPage />} />
       </Route>
 
       <Route path="*" element={<Navigate to="/" replace />} />
