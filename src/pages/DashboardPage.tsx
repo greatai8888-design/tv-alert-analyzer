@@ -220,7 +220,7 @@ export default function DashboardPage() {
             <p className="text-sm">尚無訊號，等待 TradingView 警報觸發</p>
           </div>
         ) : (
-          <div className="flex gap-2 overflow-x-auto no-scrollbar pb-1">
+          <div className="flex gap-2 overflow-x-auto no-scrollbar pb-1 pr-4">
             {recentAlerts.map(alert => (
               <AlertChip key={alert.id} alert={alert} />
             ))}

@@ -1,4 +1,54 @@
+const indicators = [
+  { name: 'SMA 20（20日均線）', category: '均線', desc: '短期趨勢方向，價格在其上方為短期看漲', logic: '計算最近 20 根 K 線收盤價平均值' },
+  { name: 'SMA 50（50日均線）', category: '均線', desc: '中期趨勢方向，黃金交叉/死亡交叉的關鍵線', logic: '計算最近 50 根 K 線收盤價平均值' },
+  { name: 'SMA 200（200日均線）', category: '均線', desc: '長期趨勢方向，機構投資者重要參考', logic: '計算最近 200 根 K 線收盤價平均值' },
+  { name: '黃金交叉 / 死亡交叉', category: '均線', desc: 'SMA50 上穿 SMA200 為黃金交叉（看漲），下穿為死亡交叉（看跌）', logic: '比較 SMA50 與 SMA200 的相對位置' },
+  { name: 'RSI(14)', category: '動量', desc: '相對強弱指標，>70 超買區（可能回調），<30 超賣區（可能反彈）', logic: '計算 14 日內漲幅與跌幅的相對比例' },
+  { name: 'MACD 線', category: '動量', desc: 'EMA12 - EMA26，判斷動量方向', logic: '12日指數均線減去26日指數均線' },
+  { name: 'MACD 信號線', category: '動量', desc: 'MACD 的 9 日 EMA，與 MACD 線交叉產生買賣訊號', logic: 'MACD 線的 9 日指數均線' },
+  { name: 'MACD 柱狀圖', category: '動量', desc: 'MACD 與信號線的差值，正值看漲、負值看跌', logic: 'MACD 線減去信號線' },
+  { name: 'ATR(14)', category: '波動', desc: '真實波動幅度均值，用於設定止損距離', logic: '計算 14 日的真實波幅（考慮跳空）平均值' },
+  { name: '布林通道上軌', category: '波動', desc: '價格觸及上軌可能超買或突破', logic: 'SMA20 + 2倍標準差' },
+  { name: '布林通道下軌', category: '波動', desc: '價格觸及下軌可能超賣或破位', logic: 'SMA20 - 2倍標準差' },
+  { name: '成交量比', category: '量能', desc: '當日成交量 / 20日均量，>1.5 為放量、<0.5 為縮量', logic: '當日成交量除以 20 日平均成交量' },
+  { name: '價格 vs SMA20', category: '位置', desc: '價格在 SMA20 上方或下方', logic: '比較當前價格與 SMA20' },
+  { name: '價格 vs SMA50', category: '位置', desc: '價格在 SMA50 上方或下方', logic: '比較當前價格與 SMA50' },
+  { name: '價格 vs SMA200', category: '位置', desc: '價格在 SMA200 上方或下方', logic: '比較當前價格與 SMA200' },
+  { name: '近 10 日 K 線', category: '價格', desc: '最近 10 根日K的開高低收量，用於辨識短期走勢', logic: '從 Yahoo Finance 抓取最近 10 根日 K 線數據' },
+]
+
+function categoryClass(category: string): string {
+  switch (category) {
+    case '均線': return 'bg-primary-light text-primary-dark'
+    case '動量': return 'bg-secondary-light text-secondary-dark'
+    case '波動': return 'bg-warning-light text-warning-dark'
+    case '量能': return 'bg-info-light text-info-dark'
+    default: return 'bg-surface text-on-surface-variant'
+  }
+}
+
+import { useState } from 'react'
+
 export default function StrategyPage() {
+  const [openIndicators, setOpenIndicators] = useState<Set<number>>(new Set())
+
+  function toggleIndicator(i: number) {
+    setOpenIndicators(prev => {
+      const next = new Set(prev)
+      if (next.has(i)) next.delete(i)
+      else next.add(i)
+      return next
+    })
+  }
+
+  function expandAll() {
+    setOpenIndicators(new Set(indicators.map((_, i) => i)))
+  }
+
+  function collapseAll() {
+    setOpenIndicators(new Set())
+  }
+
   return (
     <div className="max-w-3xl mx-auto">
       <div className="mb-8">
@@ -39,46 +89,52 @@ export default function StrategyPage() {
         </div>
       </div>
 
-      {/* Technical Indicators */}
+      {/* Technical Indicators - Accordion */}
       <div className="bg-white rounded-xl border border-border mb-6 editorial-shadow overflow-hidden">
         <div className="bg-background px-5 py-3 border-b border-border flex items-center gap-2">
           <span className="material-symbols-outlined text-secondary text-lg">analytics</span>
           <span className="text-sm font-bold text-on-surface">16 項技術指標</span>
+          <div className="flex-1" />
+          <button
+            onClick={expandAll}
+            className="text-xs font-medium text-secondary hover:text-secondary-dark px-2 py-1 rounded hover:bg-secondary-light transition-colors"
+          >
+            全部展開
+          </button>
+          <span className="text-border text-xs">|</span>
+          <button
+            onClick={collapseAll}
+            className="text-xs font-medium text-on-surface-variant hover:text-on-surface px-2 py-1 rounded hover:bg-surface transition-colors"
+          >
+            全部收折
+          </button>
         </div>
         <div className="divide-y divide-border">
-          {[
-            { name: 'SMA 20（20日均線）', category: '均線', desc: '短期趨勢方向，價格在其上方為短期看漲', logic: '計算最近 20 根 K 線收盤價平均值' },
-            { name: 'SMA 50（50日均線）', category: '均線', desc: '中期趨勢方向，黃金交叉/死亡交叉的關鍵線', logic: '計算最近 50 根 K 線收盤價平均值' },
-            { name: 'SMA 200（200日均線）', category: '均線', desc: '長期趨勢方向，機構投資者重要參考', logic: '計算最近 200 根 K 線收盤價平均值' },
-            { name: '黃金交叉 / 死亡交叉', category: '均線', desc: 'SMA50 上穿 SMA200 為黃金交叉（看漲），下穿為死亡交叉（看跌）', logic: '比較 SMA50 與 SMA200 的相對位置' },
-            { name: 'RSI(14)', category: '動量', desc: '相對強弱指標，>70 超買區（可能回調），<30 超賣區（可能反彈）', logic: '計算 14 日內漲幅與跌幅的相對比例' },
-            { name: 'MACD 線', category: '動量', desc: 'EMA12 - EMA26，判斷動量方向', logic: '12日指數均線減去26日指數均線' },
-            { name: 'MACD 信號線', category: '動量', desc: 'MACD 的 9 日 EMA，與 MACD 線交叉產生買賣訊號', logic: 'MACD 線的 9 日指數均線' },
-            { name: 'MACD 柱狀圖', category: '動量', desc: 'MACD 與信號線的差值，正值看漲、負值看跌', logic: 'MACD 線減去信號線' },
-            { name: 'ATR(14)', category: '波動', desc: '真實波動幅度均值，用於設定止損距離', logic: '計算 14 日的真實波幅（考慮跳空）平均值' },
-            { name: '布林通道上軌', category: '波動', desc: '價格觸及上軌可能超買或突破', logic: 'SMA20 + 2倍標準差' },
-            { name: '布林通道下軌', category: '波動', desc: '價格觸及下軌可能超賣或破位', logic: 'SMA20 - 2倍標準差' },
-            { name: '成交量比', category: '量能', desc: '當日成交量 / 20日均量，>1.5 為放量、<0.5 為縮量', logic: '當日成交量除以 20 日平均成交量' },
-            { name: '價格 vs SMA20', category: '位置', desc: '價格在 SMA20 上方或下方', logic: '比較當前價格與 SMA20' },
-            { name: '價格 vs SMA50', category: '位置', desc: '價格在 SMA50 上方或下方', logic: '比較當前價格與 SMA50' },
-            { name: '價格 vs SMA200', category: '位置', desc: '價格在 SMA200 上方或下方', logic: '比較當前價格與 SMA200' },
-            { name: '近 10 日 K 線', category: '價格', desc: '最近 10 根日K的開高低收量，用於辨識短期走勢', logic: '從 Yahoo Finance 抓取最近 10 根日 K 線數據' },
-          ].map((ind, i) => (
-            <div key={i} className="px-5 py-3">
-              <div className="flex items-center gap-2 mb-1">
-                <span className="text-sm font-semibold text-on-surface">{ind.name}</span>
-                <span className={`text-[10px] px-2 py-0.5 rounded-full font-medium ${
-                  ind.category === '均線' ? 'bg-primary-light text-primary-dark' :
-                  ind.category === '動量' ? 'bg-secondary-light text-secondary-dark' :
-                  ind.category === '波動' ? 'bg-warning-light text-warning-dark' :
-                  ind.category === '量能' ? 'bg-info-light text-info-dark' :
-                  'bg-surface text-on-surface-variant'
-                }`}>{ind.category}</span>
+          {indicators.map((ind, i) => {
+            const isOpen = openIndicators.has(i)
+            return (
+              <div key={i}>
+                <button
+                  className="w-full flex items-center gap-3 px-5 py-3 hover:bg-background transition-colors text-left"
+                  onClick={() => toggleIndicator(i)}
+                >
+                  <span className="text-sm font-semibold text-on-surface flex-1">{ind.name}</span>
+                  <span className={`text-[10px] px-2 py-0.5 rounded-full font-medium shrink-0 ${categoryClass(ind.category)}`}>
+                    {ind.category}
+                  </span>
+                  <span className="material-symbols-outlined text-base text-on-surface-variant shrink-0 transition-transform" style={{ transform: isOpen ? 'rotate(180deg)' : 'none' }}>
+                    expand_more
+                  </span>
+                </button>
+                {isOpen && (
+                  <div className="px-5 pb-3 bg-background/50">
+                    <p className="text-xs text-on-surface-variant mb-1">{ind.desc}</p>
+                    <p className="text-[11px] text-on-surface-variant/60 italic">計算方式：{ind.logic}</p>
+                  </div>
+                )}
               </div>
-              <p className="text-xs text-on-surface-variant mb-1">{ind.desc}</p>
-              <p className="text-[11px] text-on-surface-variant/60 italic">計算方式：{ind.logic}</p>
-            </div>
-          ))}
+            )
+          })}
         </div>
       </div>
 

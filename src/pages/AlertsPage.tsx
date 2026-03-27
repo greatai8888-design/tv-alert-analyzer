@@ -37,12 +37,15 @@ function getFirstAnalysis(alert: Alert) {
   return alert.analyses && alert.analyses.length > 0 ? alert.analyses[0] : null
 }
 
+const ITEMS_PER_PAGE = 20
+
 export default function AlertsPage() {
   const [activeFilter, setActiveFilter] = useState<FilterType>('ALL')
   const [searchTicker, setSearchTicker] = useState('')
   const [sortOrder, setSortOrder] = useState<SortOrder>('desc')
   const [viewMode, setViewMode] = useState<ViewMode>('grouped')
   const [dateRange, setDateRange] = useState('')
+  const [currentPage, setCurrentPage] = useState(1)
   const navigate = useNavigate()
 
   const { data: alerts = [], isLoading } = useAlerts({
@@ -80,6 +83,20 @@ export default function AlertsPage() {
     }
     return Array.from(map.entries())
   }, [filtered])
+
+  // Pagination over grouped entries
+  const totalPages = Math.max(1, Math.ceil(grouped.length / ITEMS_PER_PAGE))
+  const safePage = Math.min(currentPage, totalPages)
+  const paginatedGrouped = grouped.slice(
+    (safePage - 1) * ITEMS_PER_PAGE,
+    safePage * ITEMS_PER_PAGE
+  )
+
+  // Reset to page 1 when filters change
+  useMemo(() => {
+    setCurrentPage(1)
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [activeFilter, searchTicker, dateRange, sortOrder])
 
   const filterPills: { label: string; value: FilterType }[] = [
     { label: '全部', value: 'ALL' },
@@ -220,7 +237,7 @@ export default function AlertsPage() {
 
       {/* Ticker-Grouped Alert List */}
       <div className={viewMode === 'grid' ? 'grid grid-cols-1 sm:grid-cols-2 gap-4' : 'flex flex-col gap-4'}>
-        {grouped.map(([ticker, tickerAlerts]) => (
+        {paginatedGrouped.map(([ticker, tickerAlerts]) => (
           <div key={ticker} className="rounded-xl overflow-hidden editorial-shadow border border-border">
             {/* Group header */}
             <div className="bg-surface px-4 py-3 flex items-center gap-3 border-b border-border">
@@ -304,6 +321,34 @@ export default function AlertsPage() {
           </div>
         ))}
       </div>
+
+      {/* Pagination Controls */}
+      {totalPages > 1 && (
+        <div className="flex items-center justify-center gap-3 pt-2 pb-2">
+          <button
+            onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
+            disabled={safePage <= 1}
+            className="flex items-center gap-1 px-3 py-1.5 rounded-lg border border-border text-sm font-medium text-on-surface-variant hover:bg-surface transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+          >
+            <span className="material-symbols-outlined text-base">chevron_left</span>
+            上一頁
+          </button>
+
+          <span className="text-sm text-on-surface-variant">
+            第 <span className="font-semibold text-on-surface">{safePage}</span> 頁，共{' '}
+            <span className="font-semibold text-on-surface">{totalPages}</span> 頁
+          </span>
+
+          <button
+            onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
+            disabled={safePage >= totalPages}
+            className="flex items-center gap-1 px-3 py-1.5 rounded-lg border border-border text-sm font-medium text-on-surface-variant hover:bg-surface transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+          >
+            下一頁
+            <span className="material-symbols-outlined text-base">chevron_right</span>
+          </button>
+        </div>
+      )}
 
       {/* Bottom padding for mobile nav */}
       <div className="h-6" />
