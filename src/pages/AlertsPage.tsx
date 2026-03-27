@@ -107,15 +107,17 @@ export default function AlertsPage() {
 
   function filterPillClass(value: FilterType) {
     const isActive = activeFilter === value
+    const base = 'px-4 py-1.5 rounded-full text-sm font-medium transition-colors cursor-pointer'
     if (!isActive)
-      return 'px-4 py-1.5 rounded-full text-sm font-medium border border-border text-on-surface-variant hover:bg-surface transition-colors cursor-pointer'
+      return `${base} border border-border text-on-surface-variant hover:bg-surface`
     if (value === 'BUY')
-      return 'px-4 py-1.5 rounded-full text-sm font-medium bg-primary-light text-primary-dark border border-primary/20 cursor-pointer'
+      return `${base} bg-primary text-white border border-primary shadow-sm`
     if (value === 'SELL')
-      return 'px-4 py-1.5 rounded-full text-sm font-medium bg-tertiary-light text-tertiary-dark border border-tertiary/20 cursor-pointer'
+      return `${base} bg-tertiary text-white border border-tertiary shadow-sm`
     if (value === 'HOLD')
-      return 'px-4 py-1.5 rounded-full text-sm font-medium bg-warning-light text-warning-dark border border-warning/20 cursor-pointer'
-    return 'px-4 py-1.5 rounded-full text-sm font-medium bg-surface text-on-surface border border-border cursor-pointer'
+      return `${base} bg-warning text-[#2C2A24] border border-warning shadow-sm`
+    // ALL active — use a strong outline style
+    return `${base} bg-on-surface text-background border border-on-surface shadow-sm`
   }
 
   function alertRowBorder(rec?: string) {
@@ -158,16 +160,19 @@ export default function AlertsPage() {
 
           {/* Sort button */}
           <button
-            className="flex items-center gap-1 px-3 py-1.5 rounded-full text-sm font-medium border border-border text-on-surface-variant hover:bg-surface transition-colors"
+            className={`flex items-center gap-1 px-3 py-1.5 rounded-full text-sm font-medium border transition-colors ${
+              sortOrder === 'desc'
+                ? 'border-primary bg-primary-light text-primary-dark'
+                : 'border-border text-on-surface-variant hover:bg-surface'
+            }`}
             onClick={() => setSortOrder(o => (o === 'desc' ? 'asc' : 'desc'))}
+            title={sortOrder === 'desc' ? '目前：最新優先，點擊切換' : '目前：最舊優先，點擊切換'}
           >
-            最新
-            <span
-              className="material-symbols-outlined text-base transition-transform"
-              style={{ transform: sortOrder === 'asc' ? 'rotate(180deg)' : 'none' }}
-            >
+            <span className="material-symbols-outlined text-base transition-transform"
+              style={{ transform: sortOrder === 'asc' ? 'rotate(180deg)' : 'none' }}>
               arrow_downward
             </span>
+            {sortOrder === 'desc' ? '最新優先' : '最舊優先'}
           </button>
 
           {/* View toggle */}
@@ -229,9 +234,35 @@ export default function AlertsPage() {
 
       {/* Empty state */}
       {!isLoading && grouped.length === 0 && (
-        <div className="flex flex-col items-center justify-center py-20 text-on-surface-variant gap-3">
-          <span className="material-symbols-outlined text-5xl">inbox</span>
-          <p className="text-sm">沒有符合條件的警報</p>
+        <div className="flex flex-col items-center justify-center py-24 gap-4 text-center">
+          <span
+            className="material-symbols-outlined text-border"
+            style={{ fontSize: 64 }}
+          >
+            notifications_off
+          </span>
+          <h2 className="serif-heading text-[22px] text-on-surface">
+            {activeFilter !== 'ALL' || searchTicker || dateRange
+              ? '無符合條件的警報'
+              : '尚無警報'}
+          </h2>
+          <p className="text-sm text-on-surface-variant max-w-xs">
+            {activeFilter !== 'ALL' || searchTicker || dateRange
+              ? '試著變更篩選條件，或清除日期範圍重新搜尋。'
+              : '系統尚未收到任何交易訊號，稍後再來看看。'}
+          </p>
+          {(activeFilter !== 'ALL' || searchTicker || dateRange) && (
+            <button
+              onClick={() => {
+                setActiveFilter('ALL')
+                setSearchTicker('')
+                setDateRange('')
+              }}
+              className="mt-1 px-4 py-2 rounded-lg border border-border text-sm font-medium text-on-surface-variant hover:bg-surface transition-colors"
+            >
+              清除篩選條件
+            </button>
+          )}
         </div>
       )}
 

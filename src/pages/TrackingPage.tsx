@@ -143,10 +143,21 @@ export default function TrackingPage() {
 
   const activeTrades = trades.filter(t => t.status === 'tracking')
 
+  // Summary stats computed from all trades (not filtered tab)
+  const allTrades = trades
+  const totalCount = allTrades.length
+  const tradesWithPnl = allTrades.filter(t => t.pnl_percent != null)
+  const avgPnl = tradesWithPnl.length > 0
+    ? tradesWithPnl.reduce((sum, t) => sum + (t.pnl_percent ?? 0), 0) / tradesWithPnl.length
+    : null
+  const successCount = allTrades.filter(t => t.status === 'success').length
+  const settledCount = allTrades.filter(t => ['success', 'failed', 'expired'].includes(t.status)).length
+  const successRate = settledCount > 0 ? (successCount / settledCount) * 100 : null
+
   return (
     <div className="max-w-5xl mx-auto">
       {/* Header */}
-      <div className="mb-8">
+      <div className="mb-6">
         <h1 className="serif-heading text-[36px] md:text-[44px] leading-tight text-on-surface">
           交易追蹤
         </h1>
@@ -154,6 +165,55 @@ export default function TrackingPage() {
           即時追蹤持倉表現與歷史績效
         </p>
       </div>
+
+      {/* Summary Bar */}
+      {!isLoading && totalCount > 0 && (
+        <div
+          className="flex flex-wrap gap-3 mb-6 p-4 rounded-xl border border-border"
+          style={{ backgroundColor: '#F2EDE4' }}
+        >
+          {/* Total count */}
+          <div className="flex items-center gap-2">
+            <span className="material-symbols-outlined text-[18px] text-on-surface-variant">monitoring</span>
+            <span className="text-[13px] text-on-surface-variant">追蹤中</span>
+            <span className="mono-data text-[15px] font-bold text-on-surface">{activeTrades.length}</span>
+            <span className="text-[12px] text-on-surface-variant">/ {totalCount} 筆</span>
+          </div>
+
+          <div className="w-px h-5 bg-border self-center" />
+
+          {/* Average PnL */}
+          <div className="flex items-center gap-2">
+            <span className="material-symbols-outlined text-[18px] text-on-surface-variant">trending_up</span>
+            <span className="text-[13px] text-on-surface-variant">平均損益</span>
+            {avgPnl != null ? (
+              <span className={`mono-data text-[15px] font-bold ${avgPnl >= 0 ? 'text-primary-dark' : 'text-tertiary-dark'}`}>
+                {avgPnl >= 0 ? '+' : ''}{avgPnl.toFixed(1)}%
+              </span>
+            ) : (
+              <span className="mono-data text-[15px] text-on-surface-variant">—</span>
+            )}
+          </div>
+
+          <div className="w-px h-5 bg-border self-center" />
+
+          {/* Success rate */}
+          <div className="flex items-center gap-2">
+            <span className="material-symbols-outlined text-[18px] text-on-surface-variant">emoji_events</span>
+            <span className="text-[13px] text-on-surface-variant">成功率</span>
+            {successRate != null ? (
+              <span className={`mono-data text-[15px] font-bold ${successRate >= 50 ? 'text-primary-dark' : 'text-tertiary-dark'}`}>
+                {successRate.toFixed(0)}%
+              </span>
+            ) : (
+              <span className="mono-data text-[15px] text-on-surface-variant">—</span>
+            )}
+            {settledCount > 0 && (
+              <span className="text-[12px] text-on-surface-variant">({successCount}/{settledCount})</span>
+            )}
+          </div>
+        </div>
+      )}
 
       {/* Filter Tabs */}
       <div className="border-b border-border flex gap-1 mb-6">

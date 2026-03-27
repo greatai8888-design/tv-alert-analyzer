@@ -28,7 +28,7 @@ export default function TopNav({ onMenuClick }: TopNavProps) {
           </span>
         </button>
         <span
-          className="serif-heading italic text-xl"
+          className="serif-heading italic text-xl lg:hidden"
           style={{ color: '#6B7A2E' }}
         >
           Stitch
